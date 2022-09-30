@@ -8,3 +8,9 @@ spring:
     config:
       server:
         git:
+          uri: https://github.com/dev-kartik4/springboot-microservices-ecom
+          clone-on-start: true
+          username:
+          password:
+        default-label: main
+
