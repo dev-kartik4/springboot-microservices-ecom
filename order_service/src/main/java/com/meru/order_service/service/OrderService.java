@@ -10,10 +10,7 @@ import java.util.stream.Stream;
 
 import com.meru.order_service.bean.OrderRequest;
 import com.meru.order_service.exception.OrderServiceException;
-import com.meru.order_service.pojo.Address;
-import com.meru.order_service.pojo.Customer;
-import com.meru.order_service.pojo.FinalPrintableInvoice;
-import com.meru.order_service.pojo.Inventory;
+import com.meru.order_service.pojo.*;
 import com.meru.order_service.util.OrderUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +78,6 @@ public class OrderService {
 				LOGGER.info("GENERATING FINAL PRINTABLE INVOICE");
 				finalPrintableInvoice.setOrderSerialKey(newOrder.get().getOrderSerialKey());
 				finalPrintableInvoice.setOrderDate(productOrderDate.toString());
-				finalPrintableInvoice.setProductSerialNumber("");
 				finalPrintableInvoice.setTotalOrderPrice(orderRequest.getTotalOrderPrice());
 				finalPrintableInvoice.setFinalPaymentMode(orderRequest.getPaymentModeSelected());
 				Address defaultDeliveryAddress = restTemplate.getForObject("http://customer-service/getDefaultAddress/"+orderRequest.getCustomerEmailId(), Address.class);

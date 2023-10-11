@@ -179,6 +179,38 @@ public class CustomerService {
 			throw new CustomerServiceException("ERROR FETCHING ALL CUSTOMER INFO");
 		}
 	}
+	/**
+	 * WILL BE CONTROLLED BY USER ONLY
+	 *
+	 * METHOD TO UPDATE ORDER LIST FOR CUSTOMER
+	 *
+	 * @param customer
+	 * @return
+	 */
+	public Customer updateProfileInfo(Customer customer) throws CustomerServiceException{
+		try{
+			Optional<Customer> customerProfile = customerRepo.findByEmailId(customer.getEmailId());
+			if(customerProfile.isPresent()){
+				LOGGER.info("UPDATING PROFILE INFO");
+				Customer updatedProfileData = new Customer();
+				updatedProfileData.setCustomerId(customer.getCustomerId());
+				updatedProfileData.setCustomerName(customer.getCustomerName());
+				updatedProfileData.setEmailId(customer.getEmailId());
+				updatedProfileData.setAddress(customer.getAddress());
+				updatedProfileData.setPassword(customer.getPassword());
+				updatedProfileData.setPhone(customer.getPhone());
+				updatedProfileData.setMyOrders(customer.getMyOrders());
+				customerRepo.save(updatedProfileData);
+				return updatedProfileData;
+			}else{
+				throw new CustomerServiceException("ERROR FETCHING AND UPDATING PROFILE INFO");
+			}
+		}catch(CustomerServiceException custEx) {
+			LOGGER.error("ERROR FETCHING AND UPDATING PROFILE INFO");
+			custEx.printStackTrace();
+			throw new CustomerServiceException("ERROR FETCHING AND UPDATING PROFILE INFO");
+		}
+	}
 
 	/**
 	 * WILL BE CONTROLLED BY USER ONLY

@@ -23,9 +23,6 @@ public class FinalPrintableInvoice {
     @Field(name = "TOTAL_ORDER_PRICE")
     private int totalOrderPrice;
 
-    @Field(name = "PRODUCT_SERIAL_NUMBER")
-    private String productSerialNumber;
-
     @Field(name = "DELIVERY_ADDRESS")
     private Address deliveryAddress;
 

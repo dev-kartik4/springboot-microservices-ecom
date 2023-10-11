@@ -114,6 +114,14 @@ public class CustomerController {
 
 	}
 
+	/**
+	 * WILL BE CONTROLLED BY USER AND ADMIN
+	 *
+	 * METHOD TO FETCH DEFAULT DELIVERY ADDRESS OF CUSTOMER REGISTERED WITH US+
+	 *
+	 * @return
+	 * @throws CustomerServiceException
+	 */
 	@GetMapping("/getDefaultAddress/{emailId}")
 	@CircuitBreaker(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
 	@Retry(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
@@ -145,12 +153,27 @@ public class CustomerController {
 		if(!allCustomerInfo.isEmpty()){
 			LOGGER.info("FETCHED ALL CUSTOMERS INFO SUCCESSFULLY");
 			return new ResponseEntity(allCustomerInfo,HttpStatus.OK);
-		}else{
+		}else
 			throw new CustomerServiceException("ERROR FETCHING ALL CUSTOMER INFO");
-		}
 	}
 
 
+	@PutMapping("/updateProfileInfo")
+	@CircuitBreaker(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
+	@Retry(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
+	@RateLimiter(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
+	@ResponseBody
+	public ResponseEntity<Customer> updateProfileInfo(@RequestBody Customer updatedCustomerInfo) throws CustomerServiceException{
+
+		Optional<Customer> customerDetails = customerService.getCustomerByEmail(updatedCustomerInfo.getEmailId());
+		if(customerDetails.isPresent()){
+			LOGGER.info("CALLING REPO TO FETCH CUSTOMER INFO FOR ["+updatedCustomerInfo.getEmailId()+"]");
+			customerService.updateProfileInfo(updatedCustomerInfo);
+			return new ResponseEntity(updatedCustomerInfo,HttpStatus.OK);
+		}else{
+			throw new CustomerServiceException("ERROR FETCHING AND UPDATING PROFILE INFO");
+		}
+	}
 	@PutMapping ("/updateOrderList")
 	@CircuitBreaker(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
 	@Retry(name = CUSTOMER_SERVICE,fallbackMethod = "customerFallback")
@@ -158,7 +181,7 @@ public class CustomerController {
 	@ResponseBody
 	public ResponseEntity<List<Order>> updateOrderListOfCustomer(@RequestBody Order customerOrder) throws CustomerServiceException{
 
-		if(customerOrder.getCustomerEmailId() == null){
+		if(customerOrder.getCustomerEmailId().isEmpty()){
 			throw new CustomerServiceException("ERROR UPDATING ORDER LIST WITH CUSTOMER EMAIL ID");
 		}else{
 			List<Order> orderListUpdated = customerService.updateOrderList(customerOrder);

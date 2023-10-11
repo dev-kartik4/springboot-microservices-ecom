@@ -17,8 +17,6 @@ public class FinalPrintableInvoice {
 
     private double totalOrderPrice;
 
-    private String productSerialNumber;
-
     private Address deliveryAddress;
 
     private String finalPaymentMode;

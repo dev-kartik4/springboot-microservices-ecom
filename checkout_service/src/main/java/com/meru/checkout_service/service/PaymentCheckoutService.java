@@ -29,11 +29,12 @@ public class PaymentCheckoutService {
             //LOGGER.info("FINAL ORDER REQUEST "+paymentCheckout.getOrderRequest().toString());
             OrderRequest orderRequest = paymentCheckout.getOrderRequest();
             orderRequest.setCustomerId(orderRequest.getCustomerId());
-            orderRequest.setStatus("PENDING FOR PAYMENT OF ORDER");
+            orderRequest.setCustomerEmailId(orderRequest.getCustomerEmailId());
+            orderRequest.setStatus("ORDER PENDING");
             LOGGER.info("FINAL ORDER REQUEST "+orderRequest.toString());
             Product product = restTemplate.getForObject("http://localhost:8999/products/getProduct/"+orderRequest.getProductId(),Product.class);
             orderRequest.setProductId(product.getProductId());
-            orderRequest.set
+            orderRequest.setOrderRequestQuantity(orderRequest.getOrderRequestQuantity());
             orderRequest.setTotalOrderPrice(product.getPrice());
             if(paymentCheckout.getPaymentOptionSelected().equalsIgnoreCase("optedForCreditOrDebitCard")){
                 paymentOptions.setOptedForCreditOrDebitCard(true);
