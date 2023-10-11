@@ -1,106 +1,51 @@
 package com.meru.order_service.bean;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Set;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
-
-@Entity
-@Table(name="ORDER_DETAILS")
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Document(collection ="ORDER_DETAILS")
 public class Order {
-	
+
+	@Transient
+	public static final String SEQUENCE_NAME = "order_sequence";
+
 	@Id
-	@Column(name="ORDER_ID")
+	@Field(name="ORDER_ID")
 	private int orderId;
+
+	@Field(name = "ORDER_SERIAL_KEY")
+	private String orderSerialKey;
 	
-	@Column(name="CUSTOMER_ID")
+	@Field(name="CUSTOMER_ID")
 	private int customerId;
+
+	@Field(name="CUSTOMER_EMAIL_ID")
+	private String customerEmailId;
+
+	@Field(name="PRODUCTS_ORDERED")
+	private Set<Integer> productIdList;
+
+	@Field(name = "ORDERED_QUANTITY")
+	private int orderedQuantity;
 	
-	@Column(name="ADDRESS_ID")
-	private int addressId;
-	
-	@Column(name="PRODUCT_ID")
-	private int productId;
-	
-	@Column(name="ORDER_DATE")
+	@Field(name="ORDER_DATE")
+	@JsonIgnore
 	private String orderDate;
 	
-	@Column(name="ORDER_STATUS")
+	@Field(name="ORDER_STATUS")
+	@JsonIgnore
 	private String status;
-
-	public Order() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-
-	public Order(int orderId, int customerId, int addressId, int productId, String orderDate,String status) {
-		super();
-		this.orderId = orderId;
-		this.customerId = customerId;
-		this.addressId = addressId;
-		this.productId = productId;
-		this.orderDate = orderDate;
-		this.status = status;
-	}
-
-	public int getOrderId() {
-		return orderId;
-	}
-
-	public void setOrderId(int orderId) {
-		this.orderId = orderId;
-	}
-
-	public int getCustomerId() {
-		return customerId;
-	}
-
-	public void setCustomerId(int customerId) {
-		this.customerId = customerId;
-	}
-
-	public int getAddressId() {
-		return addressId;
-	}
-
-	public void setAddressId(int addressId) {
-		this.addressId = addressId;
-	}
-
-	public int getProductId() {
-		return productId;
-	}
-
-	public void setProductId(int productId) {
-		this.productId = productId;
-	}
-
-	public String getOrderDate() {
-		return orderDate;
-	}
-
-	public void setOrderDate(String orderDate) {
-		this.orderDate = orderDate;
-	}
-	
-	public String getStatus() {
-		return status;
-	}
-	public void setStatus(String status) {
-		this.status = status;
-	}
-	
-	
-	@Override
-	public String toString() {
-		return "Order [orderId=" + orderId + ", customerId=" + customerId + ", addressId=" + addressId + ", productId="
-				+ productId + ", orderDate=" + orderDate + ", status=" + status + "]";
-	}
-	
-	
-	
 }

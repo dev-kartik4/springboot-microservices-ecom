@@ -21,8 +21,8 @@ public class ProductServiceApplication {
 		SpringApplication.run(ProductServiceApplication.class, args);
 	}
 
-	@LoadBalanced
 	@Bean
+	@LoadBalanced
 	public RestTemplate restTemplate() {
 		
 		return new RestTemplate();

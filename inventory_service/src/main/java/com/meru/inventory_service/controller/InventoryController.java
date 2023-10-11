@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import com.meru.inventory_service.entity.Inventory;
 import com.meru.inventory_service.service.InventoryService;
 
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/inventory")
 public class InventoryController {
@@ -30,7 +31,7 @@ public class InventoryController {
 	}
 	
 	@GetMapping("/getInventory/{productId}")
-	public Inventory getInventoryByProductId(@PathVariable("productId") int productId) {
+	public Inventory getInventoryByProductId(@PathVariable("productId") String productId) {
 		
 		return invService.getInvByProductId(productId);
 	}

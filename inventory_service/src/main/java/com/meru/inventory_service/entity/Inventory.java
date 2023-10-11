@@ -1,11 +1,13 @@
 package com.meru.inventory_service.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.math.BigInteger;
 
@@ -27,10 +29,5 @@ public class Inventory {
 	private String status;
 
 	@Field(name = "PRODUCT_ID")
-	private int productId;
-
-	
-	
-	
-
+	private String productId;
 }

@@ -11,7 +11,7 @@ import com.meru.inventory_service.entity.Inventory;
 @Repository
 public interface InventoryRepo extends MongoRepository<Inventory, Integer> {
 
-	Inventory findByProductId(int productId);
+	Inventory findByProductId(String productId);
 
 
 }

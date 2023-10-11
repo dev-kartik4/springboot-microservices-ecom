@@ -64,11 +64,11 @@ public class InventoryService {
 		invRepo.deleteById(inventoryId);
 	}
 
-	public Inventory getInvByProductId(int productId) {
+	public Inventory getInvByProductId(String productId) {
 		List<Inventory> inv=invRepo.findAll();
 		Inventory inv1 = null;
 		for(Inventory temp:inv) {
-			if(temp.getProductId()==productId)
+			if(temp.getProductId().equals(productId))
 				return temp;
 		}
 		return inv1;

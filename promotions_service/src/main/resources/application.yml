@@ -2,6 +2,9 @@ server:
   port: 8440
 
 spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
   data:
     mongodb:
       uri: mongodb+srv://dev:dev@cluster0.lyqgp.mongodb.net/myrogdb?retryWrites=true&w=majority
