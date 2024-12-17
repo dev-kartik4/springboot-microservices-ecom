@@ -1,0 +1,72 @@
+server:
+  port: 8660
+
+spring:
+  cloud:
+    discovery:
+      enabled: true
+    config:
+      uri: http://localhost:8888
+  data:
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
+  application:
+    name: order-service-reactive
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+
+eureka:
+  client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    appname: order-service-reactive
+    hostname: localhost
+    prefer-ip-address: true
+
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      productService:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    instances:
+      productService:
+        registerHealthIndicator: true
+        maxRetryAttempts: 3
+        waitDuration: 10s
+  ratelimiter:
+    instances:
+      productService:
+        registerHealthIndicator: false
+        limitForPeriod: 10
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s

@@ -9,13 +9,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class GatewayController {
 
     @GetMapping("/customer")
-    public String customerFallbackk() { return "UH OH ! WE ARE CURRENTLY FACING DOWNTIME, PLEASE COMEBACK LATER "; }
+    public String customerFallback() { return "UH OH ! WE ARE CURRENTLY FACING DOWNTIME, PLEASE COMEBACK LATER "; }
 
     @GetMapping("/orders")
-    public String orderFallback() { return "OOPS SORRY ! WE CANNOT CONTINUE WITH YOUR ORDER AT THIS MOMENT"; }
+    public String orderFallback() { return "OOPS SORRY ! WE CANNOT CONTINUE WITH PROCESSING ANY ORDER AT THIS MOMENT"; }
 
     @GetMapping("/cart")
-    public String cartFallback(){ return "OH DEAR ! TRYING TO COMMUNICATE WITH CART , PLEASE CONTINUE EXPLORING OUR PRODUCTS"; }
+    public String cartFallback(){ return "OH DEAR ! CART ISN'T RESPONDING , MEANWHILE CONTINUE EXPLORING OUR PRODUCTS"; }
 
     @GetMapping("/products")
     public String productFallback(){
@@ -24,7 +24,7 @@ public class GatewayController {
 
     @GetMapping("/inventory")
     public String inventoryFallback(){
-        return "UH OH ! INVENTORY-STOCK SERVICE IS OUT OF SERVICE FOR NOW";
+        return "UH OH ! INVENTORY/STOCK SERVICE IS DOWN FOR NOW";
     }
 
     @GetMapping("/promotions")

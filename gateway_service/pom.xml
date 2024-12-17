@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>3.1.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.apigateway</groupId>
@@ -14,26 +14,23 @@
 	<name>gateway_service</name>
 	<description>API GATEWAY SERVICE</description>
 	<properties>
-		<java.version>11</java.version>
-		<spring-cloud.version>2020.0.2</spring-cloud.version>
+		<java.version>17</java.version>
+		<spring-cloud.version>2022.0.3</spring-cloud.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-test</artifactId>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web-services</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -83,15 +80,11 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.netflix.eureka</groupId>
-			<artifactId>eureka-client</artifactId>
-			<version>1.10.17</version>
+			<groupId>com.sun.jersey.contribs</groupId>
+			<artifactId>jersey-apache-client4</artifactId>
+			<version>1.19.4</version>
 		</dependency>
-		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-netflix-eureka-client</artifactId>
-			<version>3.0.4</version>
-		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

@@ -1,0 +1,82 @@
+server:
+  port: 8110
+
+spring:
+  application:
+    name: customer-service-reactive
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+
+  cloud:
+    discovery:
+      enabled: true
+    config:
+      uri: http://localhost:8888
+  data:
+    rest:
+      base-path: http://localhost:8999/customer
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      cart-topic: cart-topic
+      order-topic: order-topic
+      customer-notification-topic: customer-notification-topic
+    dead-letter:
+      cart-dlt: cart-dlt
+      order-dlt: order-dlt
+      customer-notification-dlt: customer-notification-dlt
+
+    consumer:
+      group-id: customer-consumer-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+      topics:
+        - cart-topic
+        - order-topic
+        - customer-notification-topic
+
+    producer:
+      cart:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      order:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      notification:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+
+    retry:
+      max-attempts: 3
+      backoff:
+        interval: 1000
+        multiplier: 2
+        max-interval: 5000
+
+
+eureka:
+  client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    appname: customer-service-reactive
+    hostname: localhost
+    prefer-ip-address: true
+#    instance-id: ${spring.application.name}:${random.uuid}
+

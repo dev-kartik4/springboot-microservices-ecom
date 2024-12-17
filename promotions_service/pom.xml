@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.meru</groupId>
-	<artifactId>promotions_service</artifactId>
+	<artifactId>promotions_reactive_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>promotions_service</name>
 	<description>This is for Promotions Microservices</description>
