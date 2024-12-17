@@ -7,6 +7,7 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shoppix.product_reactive_service.entity.SKU;
 import com.shoppix.product_reactive_service.enums.InventoryEnum;
 import com.shoppix.product_reactive_service.enums.ProductEnum;
 import com.shoppix.product_reactive_service.events.InventoryEvent;
@@ -82,21 +83,31 @@ public class ProductService{
 		return sequenceGeneratorService.generateNextSequence(Product.SEQUENCE_NAME)
 				.flatMap(nextProductId -> {
 					Product newProduct = new Product();
+					SKU sku = new SKU();
 					newProduct.setProductId(nextProductId);
 					newProduct.setProductName(product.getProductName());
+					newProduct.setProductBrand(product.getProductBrand());
 					newProduct.setProductPrice(product.getProductPrice());
 					newProduct.setModelNumber(product.getModelNumber());
 					newProduct.setDiscountedPrice(product.getDiscountedPrice());
-					if(product.getSkuIDs().isEmpty()){
-						product.getProductDescription().stream().forEach(prodDesc -> {
-							sequenceGeneratorService.generateSKU(product.getCategory(),product.getProductBrand(), prodDesc.getColor(),prodDesc.getSize());
+					if(product.getSkuList() == null){
+						LOGGER.info("GENERATING SKU IDs");
+						product.getProductDescription().forEach(prodDesc -> {
+							sku.setSkuId("PROD-SKU#"+product.getSkuList().size()+1);
+							sku.setProductVariation(prodDesc.getSize()+"-"+prodDesc.getColor());
+							sku.setSkuCode(sequenceGeneratorService.generateSKUCode(product.getCategory(),product.getProductBrand(), prodDesc.getColor(),prodDesc.getSize()));
+							sku.setProductId(nextProductId);
+							sku.setQuantityInStock(100);
+							newProduct.getSkuList().add(sku);
 						});
 					}else{
-						newProduct.setSkuIDs(product.getSkuIDs());
+						newProduct.setSkuList(product.getSkuList());
 					}
 					newProduct.setProductDescription(product.getProductDescription());
 					newProduct.setCategory(product.getCategory());
 					newProduct.setProductAvailabilityStatus(product.getProductAvailabilityStatus());
+					newProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
+					newProduct.setProductManufacturer(product.getProductManufacturer());
 					newProduct.setAverageRating(product.getAverageRating());
 					newProduct.setOffersAvailable(product.getOffersAvailable());
 					newProduct.setProductImages(product.getProductImages());
@@ -106,49 +117,23 @@ public class ProductService{
 					newProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
 
 					Inventory inventory = new Inventory();
-					if(!product.getProductSeller().isEmpty()) {
-						if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_SHOPPIX.name())) {
-							inventory.setProductId(nextProductId);
-							inventory.setSkuIds(product.getSkuIDs());
-							inventory.setProductName(product.getProductName());
-							inventory.setProductBrand(product.getProductBrand());
-							inventory.setProductPrice(product.getProductPrice());
-							inventory.setModelNumber(product.getModelNumber());
-							inventory.setCategory(product.getCategory());
-							inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_SHOPPIX.name());
+					inventory.setProductId(nextProductId);
+					inventory.setSkuIds(newProduct.getSkuList());
+					inventory.setProductName(newProduct.getProductName());
+					inventory.setProductBrand(newProduct.getProductBrand());
+					inventory.setProductPrice(newProduct.getProductPrice());
+					inventory.setModelNumber(newProduct.getModelNumber());
+					inventory.setCategory(newProduct.getCategory());
+					if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_MERCHANT.name())) {
+						inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_MERCHANT.name());
 
-							newProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
-							newProduct.setProductSeller(product.getProductSeller());
-							inventory.setProductSeller(product.getProductSeller());
-						} else if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_MERCHANT.name())) {
-							inventory.setProductId(nextProductId);
-							inventory.setSkuIds(product.getSkuIDs());
-							inventory.setProductName(product.getProductName());
-							inventory.setProductBrand(product.getProductBrand());
-							inventory.setProductPrice(product.getProductPrice());
-							inventory.setModelNumber(product.getModelNumber());
-							inventory.setCategory(product.getCategory());
-							inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_MERCHANT.name());
-
-							newProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
-							newProduct.setProductSeller(product.getMerchantDetails().getMerchantName());
-							inventory.setProductSeller(product.getProductSeller());
-						} else if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_VENDOR.name())) {
-							inventory.setProductId(nextProductId);
-							inventory.setSkuIds(product.getSkuIDs());
-							inventory.setProductName(product.getProductName());
-							inventory.setProductBrand(product.getProductBrand());
-							inventory.setProductPrice(product.getProductPrice());
-							inventory.setModelNumber(product.getModelNumber());
-							inventory.setCategory(product.getCategory());
-							inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_VENDOR.name());
-
-							newProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
-							newProduct.setProductSeller(product.getProductSeller());
-							inventory.setProductSeller(product.getProductSeller());
-						}
+						newProduct.setProductManufacturer(product.getMerchantDetails().getMerchantName());
+						inventory.setProductSeller(product.getProductManufacturer());
+					}else{
+						inventory.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
+						newProduct.setProductManufacturer(product.getProductManufacturer());
+						inventory.setProductSeller(product.getProductManufacturer());
 					}
-
 					return productRepo.insert(newProduct).subscribeOn(Schedulers.parallel())
 							.doOnSuccess(savedProduct -> {
 								LOGGER.info("PRODUCT CREATED SUCCESSFULLY");
@@ -172,7 +157,7 @@ public class ProductService{
 		return productRepo.findById((int) productId)
 				.flatMap(existingProduct -> {
 					existingProduct.setProductId(updatedProduct.getProductId());
-					existingProduct.setSkuIDs(updatedProduct.getSkuIDs());
+					existingProduct.setSkuList(updatedProduct.getSkuList());
 					existingProduct.setProductName(updatedProduct.getProductName());
 					existingProduct.setProductBrand(updatedProduct.getProductBrand());
 					existingProduct.setProductPrice(updatedProduct.getProductPrice());
@@ -184,7 +169,7 @@ public class ProductService{
 					existingProduct.setProductImages(updatedProduct.getProductImages());
 					existingProduct.setOffersAvailable(updatedProduct.getOffersAvailable());
 					existingProduct.setProductDescription(updatedProduct.getProductDescription());
-					existingProduct.setProductSeller(updatedProduct.getProductSeller());
+					existingProduct.setProductManufacturer(updatedProduct.getProductManufacturer());
 					existingProduct.setAverageRating(updatedProduct.getAverageRating());
 					existingProduct.setRatingsAndReviews(updatedProduct.getRatingsAndReviews());
 					existingProduct.setEventStatus(updatedProduct.getEventStatus());
@@ -302,8 +287,8 @@ public class ProductService{
 				updatedProduct.setCategory(newInventory.getCategory());
 				updatedProduct.setProductFulfillmentChannel(newInventory.getProductFulfillmentChannel());
 				updatedProduct.setProductAvailabilityStatus(newInventory.getStockStatus());
-				updatedProduct.setSkuIDs(newInventory.getSkuIds());
-				updatedProduct.setProductSeller(newInventory.getProductSeller());
+				updatedProduct.setSkuList(newInventory.getSkuIds());
+				updatedProduct.setProductManufacturer(newInventory.getProductSeller());
 				return productRepo.save(updatedProduct);
 			}).subscribe();
 			LOGGER.info("PRODUCT DETAILS UPDATED");

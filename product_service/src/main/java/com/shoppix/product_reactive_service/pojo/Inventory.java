@@ -1,11 +1,10 @@
 package com.shoppix.product_reactive_service.pojo;
 
-import com.shoppix.product_reactive_service.entity.SKUId;
+import com.shoppix.product_reactive_service.entity.SKU;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
@@ -17,7 +16,7 @@ public class Inventory {
 
 	private String inventoryCode;
 
-	private List<SKUId> skuIds;
+	private List<SKU> skuIds;
 
 	private long productId;
 

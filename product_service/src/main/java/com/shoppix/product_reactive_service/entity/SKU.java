@@ -5,14 +5,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "SKU_ID_DETAILS")
-public class SKUId {
+public class SKU{
 
     @Id
     @Field(name = "SKU_ID")
@@ -22,8 +20,8 @@ public class SKUId {
     private String skuCode; // SKU code for the variation (e.g., size, color)
 
     @DBRef// Reference to Product
-    @Field(name = "SKU_LINK_TO_PRODUCT")
-    private Product product;  // Linking to Product
+    @Field(name = "SKU_LINK_TO_PRODUCT_ID")
+    private long productId;  // Linking to Product
 
     @Field(name = "PRODUCT_VARIATION")
     private String productVariation; // E.g., Size, Color

@@ -53,7 +53,7 @@ public class InventoryService {
 					.flatMap(existingInventory -> {
 						existingInventory.setInventoryId(inventory.getInventoryId());
 						existingInventory.setInventoryCode(inventory.getInventoryCode());
-						existingInventory.setSkuIds(inventory.getSkuIds());
+						existingInventory.setSkuList(inventory.getSkuList());
 						existingInventory.setProductId(inventory.getProductId());
 						existingInventory.setProductName(inventory.getProductName());
 						existingInventory.setProductBrand(inventory.getProductBrand());
@@ -104,7 +104,7 @@ public class InventoryService {
 						int totalInventorySize = existingInventory.size();
 						inventory.setInventoryId(totalInventorySize + 1);
 						inventory.setProductId(inventory.getProductId());
-						inventory.setSkuIds(inventory.getSkuIds());
+						inventory.setSkuList(inventory.getSkuList());
 						inventory.setProductName(inventory.getProductName());
 						inventory.setProductBrand(inventory.getProductBrand());
 						inventory.setProductPrice(inventory.getProductPrice());
@@ -115,11 +115,11 @@ public class InventoryService {
 						inventory.setProductSerialNumber(pattern.concat(productKey).concat("-#"+inventory.getProductId()));
 						inventory.setStockStatus(inventory.getStockStatus());
 						inventory.setProductFulfillmentChannel(inventory.getProductFulfillmentChannel());
-						inventory.setAvailableQuantity(inventory.getAvailableQuantity());
-						inventory.setReservedQuantity(inventory.getReservedQuantity());
-						inventory.setReorderLevel(inventory.getReorderLevel());
-						inventory.setReorderQuantity(inventory.getReorderQuantity());
-						inventory.setStockAlertLevel(inventory.getStockAlertLevel());
+						inventory.setAvailableQuantity(10000);
+						inventory.setReservedQuantity(50);
+						inventory.setReorderLevel(100);
+						inventory.setReorderQuantity(5000);
+						inventory.setStockAlertLevel(200);
 						inventory.setStockStatus(inventory.getStockStatus());
 						inventory.setStockType(inventory.getStockType());
 						inventory.setDamagedQuantity(inventory.getDamagedQuantity());

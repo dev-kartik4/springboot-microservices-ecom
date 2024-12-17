@@ -1,7 +1,6 @@
 package com.shoppix.inventory_service_reactive.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shoppix.inventory_service_reactive.pojo.SKUId;
+import com.shoppix.inventory_service_reactive.pojo.SKU;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Date;
 import java.util.List;
 
 
@@ -27,7 +25,7 @@ public class Inventory {
 	private String inventoryCode;
 
 	@Field(name = "SKU_OF_PRODUCT_IN_INVENTORY")
-	private List<SKUId> skuIds;
+	private List<SKU> skuList;
 
 	@Field(name = "PRODUCT_ID")
 	private long productId;

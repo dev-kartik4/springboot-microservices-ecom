@@ -1,29 +1,56 @@
 package com.shoppix.product_reactive_service.service;
 
+import com.shoppix.product_reactive_service.pojo.Sequence;
+import com.shoppix.product_reactive_service.repo.SequenceRepo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class SequenceGeneratorService {
 
-    private static final AtomicInteger sequence = new AtomicInteger(100); // Start sequence at 100
+    @Autowired
+    private SequenceRepo sequenceRepository;
 
-    /**
-     * Generate the next product ID for the given sequence name.
-     *
-     * @param sequenceName The sequence name (e.g., Product.SEQUENCE_NAME).
-     * @return A Mono containing the next product ID.
-     */
-    public Mono<Integer> generateNextSequence(String sequenceName) {
-        // For simplicity, we're just returning the incremented value for the given sequence name
-        // In a real scenario, you could store this sequence value in a database to make it persistent
-        return Mono.just(sequence.getAndIncrement());
+    // Method to get the next sequence number for a given sequence name
+    public Mono<Long> generateNextSequence(String sequenceName) {
+        // Find the sequence document by name, and increment the seq field
+        return sequenceRepository.findById(sequenceName)
+                .flatMap(sequence -> {
+                    // If sequence exists, increment seq
+                    sequence.setSequenceValue(sequence.getSequenceValue() + 1);
+                    return sequenceRepository.save(sequence);  // Save the updated sequence
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    // If sequence document doesn't exist, create it with an initial value of 1
+                    Sequence newSequence = new Sequence();
+                    newSequence.setId(sequenceName);
+                    newSequence.setSequenceValue(1);
+                    return sequenceRepository.save(newSequence);
+                }))
+                .map(Sequence::getSequenceValue);  // Return the new sequence number
     }
 
-    public String generateSKU(String category,String productBrand, String color, String size) {
-        // Example SKU format: MODEL-COLOR-SIZE
-        return category + "-" + productBrand + "-" + color + "-" + size;
+    // Generate SKU based on product information
+    public String generateSKUCode(String category, String brand, String color, String size) {
+        return category + "-" + brand + "-" + color + "-" + size;  // SKU generation logic
+    }
+
+    public Mono<Long> generateSkuId(String sequenceName) {
+        // Find the sequence document by name, and increment the seq field
+        return sequenceRepository.findById(sequenceName)
+                .flatMap(sequence -> {
+                    // If sequence exists, increment seq
+                    sequence.setSequenceValue(sequence.getSequenceValue() + 1);
+                    return sequenceRepository.save(sequence);  // Save the updated sequence
+                })
+                .switchIfEmpty(Mono.defer(() -> {
+                    // If sequence document doesn't exist, create it with an initial value of 1
+                    Sequence newSequence = new Sequence();
+                    newSequence.setId(sequenceName);
+                    newSequence.setSequenceValue(1);
+                    return sequenceRepository.save(newSequence);
+                }))
+                .map(Sequence::getSequenceValue);  // Return the new sequence number
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -29,7 +30,7 @@ public class Product {
 
 	@Field(name = "PRODUCT_WITH_MANY_SKU")
 	@DBRef
-	private List<SKUId> skuIDs;
+	private List<SKU> skuList = new ArrayList<>();
 
 	@Field(name = "PRODUCT_SERIAL_NUMBER")
 	@JsonIgnore
@@ -62,8 +63,8 @@ public class Product {
 	@Field(name = "PRODUCT_FULFILLED_BY")
 	private String productFulfillmentChannel;
 
-	@Field(name = "PRODUCT_SELLER")
-	private String productSeller;
+	@Field(name = "PRODUCT_MANUFACTURER")
+	private String productManufacturer;
 
 	@Field(name = "PRODUCT_RATING")
 	private double averageRating;
