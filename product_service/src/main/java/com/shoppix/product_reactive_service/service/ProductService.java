@@ -2,7 +2,9 @@ package com.shoppix.product_reactive_service.service;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -90,18 +92,20 @@ public class ProductService{
 					newProduct.setProductPrice(product.getProductPrice());
 					newProduct.setModelNumber(product.getModelNumber());
 					newProduct.setDiscountedPrice(product.getDiscountedPrice());
-					if(product.getSkuList() == null){
+					if(product.getSkuList().size() == 0){
 						LOGGER.info("GENERATING SKU IDs");
+						List<SKU> skuList = new ArrayList<>();
 						product.getProductDescription().forEach(prodDesc -> {
 							sku.setSkuId("PROD-SKU#"+product.getSkuList().size()+1);
 							sku.setProductVariation(prodDesc.getSize()+"-"+prodDesc.getColor());
 							sku.setSkuCode(sequenceGeneratorService.generateSKUCode(product.getCategory(),product.getProductBrand(), prodDesc.getColor(),prodDesc.getSize()));
 							sku.setProductId(nextProductId);
 							sku.setQuantityInStock(100);
-							newProduct.getSkuList().add(sku);
+							skuList.add(sku);
 						});
+						newProduct.getSkuList().addAll(skuList);
 					}else{
-						newProduct.setSkuList(product.getSkuList());
+						newProduct.getSkuList().addAll(product.getSkuList());
 					}
 					newProduct.setProductDescription(product.getProductDescription());
 					newProduct.setCategory(product.getCategory());

@@ -33,7 +33,7 @@ public class SequenceGeneratorService {
 
     // Generate SKU based on product information
     public String generateSKUCode(String category, String brand, String color, String size) {
-        return category + "-" + brand + "-" + color + "-" + size;  // SKU generation logic
+        return category.substring(0, 3) + "-" + brand.substring(0, 3) + "-" + color + "-" + size;  // SKU generation logic
     }
 
     public Mono<Long> generateSkuId(String sequenceName) {
