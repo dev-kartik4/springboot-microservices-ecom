@@ -1,9 +1,11 @@
 package com.shoppix.product_reactive_service.pojo;
 
+import com.shoppix.product_reactive_service.entity.ProductVariations;
 import com.shoppix.product_reactive_service.entity.SKU;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -16,21 +18,15 @@ public class Inventory {
 
 	private String inventoryCode;
 
-	private List<SKU> skuIds;
-
-	private long productId;
+	private String productId;
 
 	private String productName;
 
-	private String productBrand;
-
-	private double productPrice;
-
-	private String modelNumber;
-
-	private String productSerialNumber;
+	private List<ProductVariations> productVariants;
 
 	private String category;
+
+	private String subCategory;
 
 	private String productFulfillmentChannel;
 	
@@ -45,6 +41,8 @@ public class Inventory {
 	private int stockAlertLevel;
 	
 	private String stockStatus;
+
+	private String warrantyStatus;
 
 	private String stockType;
 

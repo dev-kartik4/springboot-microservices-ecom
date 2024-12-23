@@ -1,0 +1,54 @@
+server:
+  port: 8990
+
+spring:
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  cloud:
+    discovery:
+      enabled: true
+    config:
+      uri: http://localhost:8888
+  data:
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
+  application:
+    name: merchant-service-reactive
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      product-topic: product-topic
+    dead-letter:
+      product-topic-dlt: product-topic-dlt
+    producer:
+      product:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    consumer:
+      auto-offset-reset: earliest
+      group-id: merchant-consumer-group
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+      topics:
+        - product-topic
+
+eureka:
+  client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    instance:
+      appname: merchant-service-reactive
+      hostname: localhost
+      prefer-ip-address: true

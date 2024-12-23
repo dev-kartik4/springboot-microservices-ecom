@@ -1,8 +1,8 @@
 package com.shoppix.customer_service_reactive.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.shoppix.customer_service_reactive.bean.Address;
-import com.shoppix.customer_service_reactive.bean.Customer;
+import com.shoppix.customer_service_reactive.entity.Address;
+import com.shoppix.customer_service_reactive.entity.Customer;
 import com.shoppix.customer_service_reactive.exception.CustomerServiceException;
 import com.shoppix.customer_service_reactive.model.*;
 import com.shoppix.customer_service_reactive.repo.CustomerRepo;
@@ -247,7 +247,7 @@ public class CustomerController {
 	 */
 	@PutMapping("/{customerIdForCart}/addProductToCart/{productId}")
 	@ResponseBody
-	public ResponseEntity<Mono<CartProduct>> addProductToCart(@PathVariable("productId") int productId, @PathVariable("customerIdForCart") int customerIdForCart, @RequestBody CartProduct cartProduct) throws CustomerServiceException {
+	public ResponseEntity<Mono<Cart>> addProductToCart(@PathVariable("productId") int productId, @PathVariable("customerIdForCart") int customerIdForCart, @RequestBody CartProduct cartProduct) throws CustomerServiceException {
 
         Mono<Cart> cart = webClientBuilder.build()
                 .get()
@@ -256,25 +256,25 @@ public class CustomerController {
                 .bodyToMono(Cart.class)
                 .publishOn(Schedulers.parallel());
 
-        Mono<Cart> updatedCartProducts = customerService.addProductToCart(customerIdForCart,cartProduct);
+        Mono<Cart> updatedCartWithProducts = customerService.addProductToCart(customerIdForCart,cartProduct);
 
-        Mono<Cart> cartObject = cart.map(cartData -> {
-            cartData.setCustomerIdForCart(customerIdForCart);
-            cartData.getCartProducts().add(cartProduct);
-            cartData.setTotalPrice((int)(cartData.getTotalPrice() + cartProduct.getPrice()));
-            try {
-                customerService.createOrUpdateCartForCustomer(cartData);
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-            return cartData;
-        });
+//        Mono<Cart> cartObject = cart.map(cartData -> {
+//            cartData.setCustomerIdForCart(customerIdForCart);
+//            cartData.getCartProducts().add(cartProduct);
+//            cartData.setTotalPrice((int)(cartData.getTotalPrice() + cartProduct.getPrice()));
+//            try {
+//                customerService.createOrUpdateCartForCustomer(cartData);
+//            } catch (JsonProcessingException e) {
+//                throw new RuntimeException(e);
+//            }
+//            return cartData;
+//        });
 
-        cart.switchIfEmpty(Mono.error(() -> {
-            throw new CustomerServiceException("ERROR FETCHING CART AND PRODUCT DETAILS FOR CUSTOMER ID ["+customerIdForCart+"]");
-        })).delaySubscription(Duration.ofMillis(3000));
+//        cart.switchIfEmpty(Mono.error(() -> {
+//            throw new CustomerServiceException("ERROR FETCHING CART AND PRODUCT DETAILS FOR CUSTOMER ID ["+customerIdForCart+"]");
+//        })).delaySubscription(Duration.ofMillis(3000));
 
-        return new ResponseEntity(cartProduct,HttpStatus.OK);
+        return new ResponseEntity(updatedCartWithProducts,HttpStatus.OK);
 	}
 
 	/**

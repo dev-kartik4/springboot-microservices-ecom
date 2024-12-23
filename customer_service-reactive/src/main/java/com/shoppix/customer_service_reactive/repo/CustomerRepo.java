@@ -1,7 +1,7 @@
 package com.shoppix.customer_service_reactive.repo;
 
-import com.shoppix.customer_service_reactive.bean.Address;
-import com.shoppix.customer_service_reactive.bean.Customer;
+import com.shoppix.customer_service_reactive.entity.Address;
+import com.shoppix.customer_service_reactive.entity.Customer;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;

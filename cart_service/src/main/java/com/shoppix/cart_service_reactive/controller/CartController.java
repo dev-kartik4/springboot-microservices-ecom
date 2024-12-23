@@ -76,7 +76,7 @@ public class CartController {
      * @throws CartServiceException
      */
 //    @PutMapping("/customer/{customerIdForCart}/addProductToCart")
-//    public ResponseEntity<Mono<Cart>> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestBody CartProducts cartProd) throws CartServiceException{
+//    public ResponseEntity<Mono<Cart>> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestBody CartProduct cartProd) throws CartServiceException{
 //
 //        Mono<Cart> updatedCartWithProducts = cartService.addProductToCart(customerIdForCart,cartProd);
 //

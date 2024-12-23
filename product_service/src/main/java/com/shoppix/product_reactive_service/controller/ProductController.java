@@ -73,17 +73,9 @@ public class ProductController {
 		return new ResponseEntity<>(allProductInfo,HttpStatus.OK);
 	}
 
-	/**
-	 * WILL BE CONTROLLED BY ADMIN
-	 * <p>
-	 * API TO PRODUCT BY PRODUCT ID
-	 *
-	 * @param productId
-	 * @return
-	 * @throws ProductServiceException
-	 */
+
 	@GetMapping("/filterProductById/{productId}")
-	public ResponseEntity<Mono<Product>> filterProductById(@PathVariable("productId") int productId) throws ProductServiceException {
+	public ResponseEntity<Mono<Product>> filterProductsById(@PathVariable("productId") String productId) throws ProductServiceException {
 
 		LOGGER.info("FETCHING PRODUCT WITH PRODUCT ID ["+productId+"]");
 		Mono<Product> product = productService.getProductById(productId);
@@ -92,18 +84,8 @@ public class ProductController {
 	}
 
 
-
-	/**
-	 * WILL BE CONTROLLED BY USER AND ADMIN BOTH
-	 * <p>
-	 * API TO FETCH PRODUCT BY PRODUCT NAME
-	 *
-	 * @param productName
-	 * @return
-	 * @throws ProductServiceException
-	 */
 	@GetMapping("/filterProductsByName/{productName}")
-	public ResponseEntity<?> filterProductByName(@PathVariable("productName") String productName) throws ProductServiceException {
+	public ResponseEntity<?> filterProductsByName(@PathVariable("productName") String productName) throws ProductServiceException {
 
 		LOGGER.info("FETCHING PRODUCT WITH PRODUCT NAME ["+productName+"]");
 		Mono<Product> product = productService.getProductByName(productName);
@@ -111,15 +93,6 @@ public class ProductController {
 		return new ResponseEntity(product,HttpStatus.OK);
 	}
 
-	/**
-	 * WILL BE CONTROLLED BY USER AND ADMIN BOTH
-	 * <p>
-	 * API TO FETCH PRODUCT BY PRODUCT NAME
-	 *
-	 * @param productName
-	 * @return
-	 * @throws ProductServiceException
-	 */
 	@GetMapping("/filterProductsByCategory/{productCategory}")
 	public ResponseEntity<?> filterProductsByCategory(@PathVariable("productName") String productName) throws ProductServiceException {
 
@@ -129,14 +102,8 @@ public class ProductController {
 		return new ResponseEntity(product,HttpStatus.OK);
 	}
 
-	/**
-	 * WILL BE CONTROLLED BY ADMIN
-	 * @param productId
-	 * @return
-	 * @throws ProductServiceException
-	 */
 	@DeleteMapping("/deleteProductById/{productId}")
-	public ResponseEntity<Mono<Boolean>> deleteProductById(@PathVariable("productId") int productId) throws ProductServiceException{
+	public ResponseEntity<Mono<Boolean>> deleteProductById(@PathVariable("productId") String productId) throws ProductServiceException{
 
 		AtomicBoolean productDeleted = productService.deleteProductById(productId);
 
@@ -150,16 +117,6 @@ public class ProductController {
 	}
 
 	/* ALL MAPPINGS FOR PRODUCT-INVENTORY MICROSERVICE*/
-
-//	@PostMapping("/addNewStock")
-//	@ResponseBody
-//	public ResponseEntity<Mono<Inventory>> createOrUpdateInventory(@RequestBody Inventory inv) throws ProductServiceException{
-//
-//		LOGGER.info("ADDING NEW STOCK DETAILS FOR PRODUCT...");
-//		Mono<Inventory> inventory = productService.createOrUpdateInventoryForProduct(inv.getProductId(),inv);
-//
-//		return new ResponseEntity(inventory,HttpStatus.OK);
-//	}
 	
 	@GetMapping("/inventory/{inventoryId}")
 	public ResponseEntity<Mono<Inventory>> getProductByInventoryId(@PathVariable("inventoryId") int inventoryId) throws ProductServiceException{

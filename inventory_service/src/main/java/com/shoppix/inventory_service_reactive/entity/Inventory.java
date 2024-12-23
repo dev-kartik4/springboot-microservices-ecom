@@ -1,5 +1,7 @@
 package com.shoppix.inventory_service_reactive.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.shoppix.inventory_service_reactive.pojo.ProductVariations;
 import com.shoppix.inventory_service_reactive.pojo.SKU;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,29 +26,20 @@ public class Inventory {
 	@Field(name = "INVENTORY_CODE")
 	private String inventoryCode;
 
-	@Field(name = "SKU_OF_PRODUCT_IN_INVENTORY")
-	private List<SKU> skuList;
-
 	@Field(name = "PRODUCT_ID")
-	private long productId;
+	private String parentProductId;
 
 	@Field(name = "PRODUCT_NAME")
 	private String productName;
 
-	@Field(name = "PRODUCT_BRAND")
-	private String productBrand;
-
-	@Field(name = "PRODUCT_PRICE")
-	private double productPrice;
-
-	@Field(name = "MODEL_NUMBER")
-	private String modelNumber;
-
-	@Field(name = "PRODUCT_SERIAL_NUMBER")
-	private String productSerialNumber;
+	@Field(name = "ALL_PRODUCT_VARIANTS")
+	private List<ProductVariations> productVariants;
 
 	@Field(name = "CATEGORY")
 	private String category;
+
+	@Field(name = "SUB_CATEGORY")
+	private String subCategory;
 
 	@Field(name = "PRODUCT_FULFILLED_BY")
 	private String productFulfillmentChannel;
@@ -97,11 +90,14 @@ public class Inventory {
 	private String stockAvailableLocation;
 
 	@Field(name = "EVENT_STATUS")
+	@JsonIgnore
 	private String eventStatus;
 
 	@Field(name = "FIRST_CREATED_AT")
+	@JsonIgnore
 	private String firstCreatedAt;
 
 	@Field(name = "LAST_UPDATED_AT")
+	@JsonIgnore
 	private String lastUpdatedAt;
 }

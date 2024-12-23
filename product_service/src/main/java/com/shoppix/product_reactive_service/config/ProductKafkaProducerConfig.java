@@ -21,6 +21,9 @@ public class ProductKafkaProducerConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String kafkaBootstrapServers;
 
+    @Value("${spring.kafka.topic.product-topic}")
+    private String productTopic;
+
     @Value("${spring.kafka.topic.product-notification-topic}")
     private String productNotificationTopic;
 
@@ -29,6 +32,9 @@ public class ProductKafkaProducerConfig {
 
     @Value("${spring.kafka.topic.offers-topic}")
     private String offersTopic;
+
+    @Value("${spring.kafka.dead-letter.product-topic-dlt}")
+    private String deadLetterProductTopic;
 
     @Value("${spring.kafka.dead-letter.product-notification-dlt}")
     private String deadLetterProductNotificationTopic;
@@ -58,6 +64,15 @@ public class ProductKafkaProducerConfig {
     @Bean
     public NewTopic productTopic() {
         return TopicBuilder
+                .name(productTopic)
+                .partitions(3)
+                .replicas(3)
+                .build();
+    }
+
+    @Bean
+    public NewTopic productNotificationTopic() {
+        return TopicBuilder
                 .name(productNotificationTopic)
                 .partitions(3)
                 .replicas(3)
@@ -83,7 +98,16 @@ public class ProductKafkaProducerConfig {
     }
 
     @Bean
-    public NewTopic deadLetterProductTopic(){
+    public NewTopic deadLetterProductTopic() {
+        return TopicBuilder
+                .name(deadLetterProductTopic)
+                .partitions(3)
+                .replicas(3)
+                .build();
+    }
+
+    @Bean
+    public NewTopic deadLetterProductNotificationTopic(){
         return TopicBuilder
                 .name(deadLetterProductNotificationTopic)
                 .partitions(3)

@@ -12,7 +12,7 @@ public class InventoryEvent {
 
     private int inventoryId;
 
-    private long productId;
+    private String parentProductId;
 
     private String inventoryMessageType;
 

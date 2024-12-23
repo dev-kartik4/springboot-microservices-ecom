@@ -20,14 +20,19 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
+      product-topic: product-topic
       product-notification-topic: product-notification-topic
       inventory-topic: inventory-topic
       offers-topic: offers-topic
     dead-letter:
+      product-topic-dlt: product-topic-dlt
       product-notification-dlt: product-notification-dlt
       inventory-dlt: inventory-dlt
       offers-dlt: offers-dlt
     producer:
+      product:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       inventory:
         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -49,6 +54,7 @@ spring:
             trusted:
               packages: "*"
       topics:
+        - product-topic
         - product-notification-topic
         - inventory-topic
         - offers-topic

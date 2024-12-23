@@ -1,4 +1,4 @@
-package com.shoppix.customer_service_reactive.bean;
+package com.shoppix.customer_service_reactive.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,6 +53,6 @@ public class Customer {
 	@Field(name = "LAST_UPDATED_DATE_TIME")
 	private String lastUpdatedDateTime;
 
-	@Field(name = "ACCOUNT_EXISTENCE")
+	@Field(name = "CUSTOMER_ACCOUNT_EXISTENCE")
 	private boolean accountExistence;
 }

@@ -1,0 +1,58 @@
+package com.shoppix.merchant_service_reactive.pojo;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Field;
+
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ProductVariations {
+
+    @Field(name = "VARIANT_PRODUCT_ID")
+    @JsonIgnore
+    private String variantProductId;
+
+    @Field(name = "SKU_CODE")
+    private String skuCode;
+
+    @Field(name = "QUANTITY_IN_STOCK")
+    private int quantityOfStock;
+
+    @Field(name = "PRODUCT_DESCRIPTIVE_DETAILS")
+    private ProductDescription productDescription;
+
+    @Field(name = "BRAND")
+    private String brand;
+
+    @Field(name = "MRP_OF_PRODUCT")
+    private double mrpProductPrice;
+
+    @Field(name = "LISTING_PRICE")
+    private double listingPrice;
+
+    @Field(name = "DISCOUNTED_PRICE")
+    private double discountedPrice;
+
+    @Field(name = "PRODUCT_AVAILABILITY_STATUS")
+    private String productAvailabilityStatus;
+
+    @Field(name = "PRODUCT_RATING")
+    private double averageRating;
+
+    @Field(name = "PRODUCT_IMAGES")
+    private List<String> productImages;
+
+    @Field(name = "OFFERS_AVAILABLE")
+    private List<Offers> offersAvailable;
+
+    @Field(name = "RATINGS_AND_REVIEWS")
+    private List<RatingsAndReviews> ratingsAndReviews;
+
+}

@@ -20,7 +20,7 @@ public class Cart {
 	private int customerIdForCart;
 
 	@Field(name = "PRODUCTS_IN_CART")
-	public List<CartProducts> cartProducts;
+	public List<CartProduct> cartProducts;
 
 	@Field(name = "TOTAL_PRICE")
 	public int totalPrice;

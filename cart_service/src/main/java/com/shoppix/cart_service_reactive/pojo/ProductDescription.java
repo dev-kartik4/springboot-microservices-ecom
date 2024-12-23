@@ -1,8 +1,9 @@
-package com.shoppix.customer_service_reactive.model;
+package com.shoppix.cart_service_reactive.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @NoArgsConstructor

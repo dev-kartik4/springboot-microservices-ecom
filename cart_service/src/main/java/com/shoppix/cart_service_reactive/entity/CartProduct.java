@@ -9,7 +9,7 @@ import org.springframework.data.annotation.Id;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CartProducts {
+public class CartProduct {
 
     @Id
     private int productId;

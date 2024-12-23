@@ -68,6 +68,7 @@ public class InventoryService {
 						existingInventory.setReorderQuantity(inventory.getReorderQuantity());
 						existingInventory.setStockAlertLevel(inventory.getStockAlertLevel());
 						existingInventory.setStockStatus(inventory.getStockStatus());
+						existingInventory.setWarrantyStatus(inventory.getWarrantyStatus());
 						existingInventory.setStockType(inventory.getStockType());
 						existingInventory.setDamagedQuantity(inventory.getDamagedQuantity());
 						existingInventory.setReturnedQuantity(inventory.getReturnedQuantity());
@@ -121,6 +122,7 @@ public class InventoryService {
 						inventory.setReorderQuantity(5000);
 						inventory.setStockAlertLevel(200);
 						inventory.setStockStatus(inventory.getStockStatus());
+						inventory.setWarrantyStatus(inventory.getWarrantyStatus());
 						inventory.setStockType(inventory.getStockType());
 						inventory.setDamagedQuantity(inventory.getDamagedQuantity());
 						inventory.setReturnedQuantity(inventory.getReturnedQuantity());
@@ -159,7 +161,7 @@ public class InventoryService {
 			LOGGER.info("UPDATING PRODUCT THROUGH INVENTORY EVENT");
 			InventoryEvent inventoryEvent = new InventoryEvent();
 			inventoryEvent.setInventoryId(existingInventory.getInventoryId());
-			inventoryEvent.setProductId(existingInventory.getProductId());
+			inventoryEvent.setProductId(existingInventory.getParentProductId());
 			inventoryEvent.setInventoryMessageType(existingInventory.getEventStatus());
 			inventoryEvent.setInventory(existingInventory);
 

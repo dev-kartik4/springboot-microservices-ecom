@@ -1,4 +1,4 @@
-package com.shoppix.customer_service_reactive.bean;
+package com.shoppix.customer_service_reactive.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

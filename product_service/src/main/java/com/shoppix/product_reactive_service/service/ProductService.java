@@ -2,27 +2,25 @@ package com.shoppix.product_reactive_service.service;
 
 import java.text.SimpleDateFormat;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shoppix.product_reactive_service.entity.SKU;
+import com.shoppix.product_reactive_service.entity.*;
 import com.shoppix.product_reactive_service.enums.InventoryEnum;
 import com.shoppix.product_reactive_service.enums.ProductEnum;
 import com.shoppix.product_reactive_service.events.InventoryEvent;
 import com.shoppix.product_reactive_service.exception.ProductServiceException;
 import com.shoppix.product_reactive_service.pojo.Inventory;
 import com.shoppix.product_reactive_service.utility.ProductIdGenerator;
+import org.apache.kafka.common.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.shoppix.product_reactive_service.entity.Product;
 import com.shoppix.product_reactive_service.repo.ProductRepo;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
@@ -72,122 +70,118 @@ public class ProductService{
 	 * @throws ProductServiceException
 	 */
 
-	public Mono<Product> createOrUpdateProduct(Product product){
-		if(product.getProductId() == 0){
-			return createNewProduct(product);
-		}else{
-			return updateProduct(product.getProductId(), product);
+	public Mono<Product> createOrUpdateProduct(Product product) {
+
+		if (product.getParentProductId() == null) {
+			return Mono.error(new ProductServiceException("Product ID must not be null"));
 		}
+
+		return productRepo.findById(product.getParentProductId())
+				.switchIfEmpty(Mono.defer(() -> createNewProduct(product)))
+				.flatMap(existingProduct -> updateProduct(product.getParentProductId(), existingProduct));
 	}
+
 
 	private Mono<Product> createNewProduct(Product product) {
 
-		return sequenceGeneratorService.generateNextSequence(Product.SEQUENCE_NAME)
-				.flatMap(nextProductId -> {
-					Product newProduct = new Product();
-					SKU sku = new SKU();
-					newProduct.setProductId(nextProductId);
-					newProduct.setProductName(product.getProductName());
-					newProduct.setProductBrand(product.getProductBrand());
-					newProduct.setProductPrice(product.getProductPrice());
-					newProduct.setModelNumber(product.getModelNumber());
-					newProduct.setDiscountedPrice(product.getDiscountedPrice());
-					if(product.getSkuList().size() == 0){
-						LOGGER.info("GENERATING SKU IDs");
-						List<SKU> skuList = new ArrayList<>();
-						product.getProductDescription().forEach(prodDesc -> {
-							sku.setSkuId("PROD-SKU#"+product.getSkuList().size()+1);
-							sku.setProductVariation(prodDesc.getSize()+"-"+prodDesc.getColor());
-							sku.setSkuCode(sequenceGeneratorService.generateSKUCode(product.getCategory(),product.getProductBrand(), prodDesc.getColor(),prodDesc.getSize()));
-							sku.setProductId(nextProductId);
-							sku.setQuantityInStock(100);
-							skuList.add(sku);
-						});
-						newProduct.getSkuList().addAll(skuList);
-					}else{
-						newProduct.getSkuList().addAll(product.getSkuList());
-					}
-					newProduct.setProductDescription(product.getProductDescription());
-					newProduct.setCategory(product.getCategory());
-					newProduct.setProductAvailabilityStatus(product.getProductAvailabilityStatus());
-					newProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
-					newProduct.setProductManufacturer(product.getProductManufacturer());
-					newProduct.setAverageRating(product.getAverageRating());
-					newProduct.setOffersAvailable(product.getOffersAvailable());
-					newProduct.setProductImages(product.getProductImages());
-					newProduct.setRatingsAndReviews(product.getRatingsAndReviews());
-					newProduct.setEventStatus(ProductEnum.PRODUCT_CREATE_SUCCESS.name());
-					newProduct.setCreatedDateTime(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-					newProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
+		Product newProduct = new Product();
+		if(Boolean.TRUE.equals(Utils.isBlank(product.getParentProductId()))){
+			newProduct.setParentProductId(sequenceGeneratorService.generateProductUniqueID(product.getCategory()));
+		}else{
+			newProduct.setParentProductId(product.getParentProductId());
+		}
+		newProduct.setProductName(product.getProductName());
+		newProduct.setProductVariations(product.getProductVariations());
+		newProduct.setCategory(product.getCategory());
+		newProduct.setSubCategory(product.getSubCategory());
+		newProduct.setProductVariations(product.getProductVariations());
+		newProduct.setEventStatus(ProductEnum.PRODUCT_CREATE_SUCCESS.name());
+		newProduct.setCreatedDateTime(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+		newProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
 
-					Inventory inventory = new Inventory();
-					inventory.setProductId(nextProductId);
-					inventory.setSkuIds(newProduct.getSkuList());
-					inventory.setProductName(newProduct.getProductName());
-					inventory.setProductBrand(newProduct.getProductBrand());
-					inventory.setProductPrice(newProduct.getProductPrice());
-					inventory.setModelNumber(newProduct.getModelNumber());
-					inventory.setCategory(newProduct.getCategory());
-					if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_MERCHANT.name())) {
-						inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_MERCHANT.name());
+		product.getProductVariations().forEach(variation -> {
+			LOGGER.info("GENERATING SKU CODE AND PRODUCT VARIANT DETAILS");
+			if(Boolean.TRUE.equals(Utils.isBlank(variation.getVariantProductId()))){
+				variation.setVariantProductId(sequenceGeneratorService.generateProductUniqueID(product.getSubCategory()));
+			}else{
+				variation.setVariantProductId(variation.getVariantProductId());
+			}
+			if(variation.getSkuCode().isEmpty()){
+				variation.setSkuCode(sequenceGeneratorService
+						.generateSKUCode(product.getCategory(),product.getSubCategory(),variation.getBrand(),variation.getProductDescription().getColor(),  variation.getProductDescription().getSize()));
+			}else{
+				variation.setSkuCode(variation.getSkuCode());
+			}
+			variation.setBrand(variation.getBrand());
+			variation.setProductAvailabilityStatus(variation.getProductAvailabilityStatus());
+			variation.setAverageRating(variation.getAverageRating());
+			variation.setProductImages(variation.getProductImages());
+			variation.setOffersAvailable(variation.getOffersAvailable());
+			variation.setRatingsAndReviews(variation.getRatingsAndReviews());
+			variation.setProductDescription(variation.getProductDescription());
+		});
 
-						newProduct.setProductManufacturer(product.getMerchantDetails().getMerchantName());
-						inventory.setProductSeller(product.getProductManufacturer());
-					}else{
-						inventory.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
-						newProduct.setProductManufacturer(product.getProductManufacturer());
-						inventory.setProductSeller(product.getProductManufacturer());
-					}
-					return productRepo.insert(newProduct).subscribeOn(Schedulers.parallel())
-							.doOnSuccess(savedProduct -> {
-								LOGGER.info("PRODUCT CREATED SUCCESSFULLY");
-								LOGGER.info("SENDING REQUEST FOR INITIATION OF NEW STOCK FOR PRODUCT ID ["+newProduct.getProductId()+"]");
-								inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_IN_PROGRESS.name());
-								inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-								createOrUpdateInventoryForProduct(newProduct.getProductId(),inventory);
-							})
-							.onErrorResume(e -> {
-								inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_FAILED.name());
-								inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-								deleteProductById(newProduct.getProductId());
-								LOGGER.error("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e);
-								return Mono.error(new ProductServiceException("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e));
-							});
+		// Create and populate inventory for the new product
+		Inventory inventory = new Inventory();
+		inventory.setProductId(newProduct.getParentProductId());
+		inventory.setProductName(newProduct.getProductName());
+		inventory.setCategory(newProduct.getCategory());
+		inventory.setSubCategory(newProduct.getSubCategory());
+		inventory.setProductVariants(newProduct.getProductVariations());
+
+		// Handle product fulfillment channel logic
+		if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_MERCHANT.name())) {
+			inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_MERCHANT.name());
+			newProduct.setProductManufacturer(product.getProductManufacturer());
+			inventory.setProductSeller(product.getProductManufacturer());
+		} else if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_SHOPPIX.name())){
+			inventory.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
+			newProduct.setProductManufacturer(product.getProductManufacturer());
+			inventory.setProductSeller(product.getProductManufacturer());
+		}
+
+		// Save the product and inventory
+		return productRepo.insert(newProduct).subscribeOn(Schedulers.parallel())
+				.doOnSuccess(savedProduct -> {
+					LOGGER.info("PRODUCT CREATED SUCCESSFULLY");
+					LOGGER.info("SENDING REQUEST FOR INITIATION OF NEW STOCK FOR PRODUCT ID [" + newProduct.getParentProductId() + "]");
+					inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_IN_PROGRESS.name());
+					inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+					createOrUpdateInventoryForProduct(newProduct.getParentProductId(), inventory);
+				})
+				.onErrorResume(e -> {
+					inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_FAILED.name());
+					inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+					deleteProductById(newProduct.getParentProductId());
+					LOGGER.error("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e);
+					return Mono.error(new ProductServiceException("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e));
 				});
 	}
 
-	private Mono<Product> updateProduct(long productId,Product updatedProduct) {
 
-		return productRepo.findById((int) productId)
+
+	private Mono<Product> updateProduct(String productId, Product updatedProduct) {
+		return productRepo.findById(productId)
 				.flatMap(existingProduct -> {
-					existingProduct.setProductId(updatedProduct.getProductId());
-					existingProduct.setSkuList(updatedProduct.getSkuList());
+					existingProduct.setParentProductId(updatedProduct.getParentProductId());
 					existingProduct.setProductName(updatedProduct.getProductName());
-					existingProduct.setProductBrand(updatedProduct.getProductBrand());
-					existingProduct.setProductPrice(updatedProduct.getProductPrice());
-					existingProduct.setModelNumber(updatedProduct.getModelNumber());
-					existingProduct.setDiscountedPrice(updatedProduct.getDiscountedPrice());
+					existingProduct.setProductVariations(updatedProduct.getProductVariations());
 					existingProduct.setCategory(updatedProduct.getCategory());
-					existingProduct.setProductAvailabilityStatus(updatedProduct.getProductAvailabilityStatus());
+					existingProduct.setSubCategory(updatedProduct.getSubCategory());
 					existingProduct.setProductFulfillmentChannel(updatedProduct.getProductFulfillmentChannel());
-					existingProduct.setProductImages(updatedProduct.getProductImages());
-					existingProduct.setOffersAvailable(updatedProduct.getOffersAvailable());
-					existingProduct.setProductDescription(updatedProduct.getProductDescription());
 					existingProduct.setProductManufacturer(updatedProduct.getProductManufacturer());
-					existingProduct.setAverageRating(updatedProduct.getAverageRating());
-					existingProduct.setRatingsAndReviews(updatedProduct.getRatingsAndReviews());
-					existingProduct.setEventStatus(updatedProduct.getEventStatus());
+					existingProduct.setProductSeller(updatedProduct.getProductSeller());
+					existingProduct.setEventStatus(ProductEnum.PRODUCT_UPDATED.name());
 					existingProduct.setCreatedDateTime(updatedProduct.getCreatedDateTime());
 					existingProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
 
 					return productRepo.save(existingProduct)
-							.doOnSuccess(savedProduct -> LOGGER.info("PRODUCT UPDATED WITH PRODUCT ID: {}", savedProduct.getProductId()))
+							.doOnSuccess(savedProduct -> LOGGER.info("PRODUCT UPDATED WITH PRODUCT ID: {}", savedProduct.getParentProductId()))
 							.onErrorResume(e -> {
-								LOGGER.error("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: {}", updatedProduct.getProductId(), e);
-								return Mono.error(new ProductServiceException("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: " + updatedProduct.getProductId()));
+								LOGGER.error("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: {}", updatedProduct.getParentProductId(), e);
+								return Mono.error(new ProductServiceException("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: " + updatedProduct.getParentProductId()));
 							});
 				});
-
 	}
 
 	/**
@@ -211,9 +205,9 @@ public class ProductService{
 	 * @return
 	 * @throws ProductServiceException
 	 */
-	public Mono<Product> getProductById(long productId) throws ProductServiceException{
+	public Mono<Product> getProductById(String productId) throws ProductServiceException{
 
-		Mono<Product> product = productRepo.findById((int) productId);
+		Mono<Product> product = productRepo.findById(productId);
 		return product.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.empty()).doOnNext(System.out::println).delaySubscription(Duration.ofMillis(3000));
 	}
 
@@ -232,20 +226,27 @@ public class ProductService{
 		}));
 	}
 
+	public Mono<MerchantDetails> getMerchantDetails(String merchantId,String parentProductId)	throws ProductServiceException{
+		Mono<MerchantDetails> merchantDetails = productRepo.findMerchantDetailsByParentProductId(merchantId,parentProductId);
+		merchantDetails.flatMap(merchantData ->{
+			merchantData.getListOfProductsByMerchant().stream().map(product -> productRepo.findById(parentProductId)).findFirst().ifPresent(product -> {});
+		});
+	}
+
 	/**
 	 *
 	 * @param productId
 	 * @return
 	 * @throws ProductServiceException
 	 */
-	public AtomicBoolean deleteProductById(long productId) throws ProductServiceException {
+	public AtomicBoolean deleteProductById(String productId) throws ProductServiceException {
 
 		LOGGER.info("DELETING... PRODUCT DETAILS WITH PRODUCT ID ["+productId+"]");
 		AtomicBoolean productDeleted = new AtomicBoolean(false);
 		Mono<Product> productExists = getProductById(productId);
 		productExists.publishOn(Schedulers.parallel()).filter(product -> {
 			if((product != null)){
-				productRepo.deleteById((int) productId).subscribe();
+				productRepo.deleteById(productId).subscribe();
 				productDeleted.set(true);
 				LOGGER.info("PRODUCT AND INVENTORY DETAILS DELETED WITH PRODUCT ID ["+productId+"]");
 			}
@@ -258,7 +259,7 @@ public class ProductService{
 		return productDeleted;
 	}
 
-	public void createOrUpdateInventoryForProduct(long productId,Inventory newInventory) throws ProductServiceException{
+	public void createOrUpdateInventoryForProduct(String productId,Inventory newInventory) throws ProductServiceException{
 
 		LOGGER.info("NEW INVENTORY INITIATION IN PROGRESS FOR THE PRODUCT ID ["+productId+"]");
 		try{
@@ -284,15 +285,14 @@ public class ProductService{
 
 			Mono<Product> productDetails = getProductById(newInventory.getProductId()).publishOn(Schedulers.parallel());
 			productDetails.flatMap(updatedProduct -> {
+				updatedProduct.setParentProductId(newInventory.getProductId());
 				updatedProduct.setProductName(newInventory.getProductName());
-				updatedProduct.setProductBrand(newInventory.getProductBrand());
-				updatedProduct.setProductPrice(newInventory.getProductPrice());
-				updatedProduct.setProductSerialNumber(newInventory.getProductSerialNumber());
 				updatedProduct.setCategory(newInventory.getCategory());
+				updatedProduct.setSubCategory(newInventory.getSubCategory());
 				updatedProduct.setProductFulfillmentChannel(newInventory.getProductFulfillmentChannel());
-				updatedProduct.setProductAvailabilityStatus(newInventory.getStockStatus());
-				updatedProduct.setSkuList(newInventory.getSkuIds());
 				updatedProduct.setProductManufacturer(newInventory.getProductSeller());
+				updatedProduct.setProductSeller(newInventory.getProductSeller());
+				updatedProduct.setProductVariations(newInventory.getProductVariants());
 				return productRepo.save(updatedProduct);
 			}).subscribe();
 			LOGGER.info("PRODUCT DETAILS UPDATED");
@@ -409,4 +409,6 @@ public class ProductService{
 		simpleDateFormat.setTimeZone(TimeZone.getTimeZone("IST"));
 		return simpleDateFormat.format(date);
 	}
+
+
 }

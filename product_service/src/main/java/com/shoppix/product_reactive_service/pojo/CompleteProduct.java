@@ -14,5 +14,5 @@ public class CompleteProduct {
 	
 	private Inventory inv;
 
-	private Offers promos;
+	private Offers offers;
 }

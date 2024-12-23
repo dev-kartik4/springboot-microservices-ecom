@@ -2,6 +2,7 @@ package com.shoppix.cart_service_reactive.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shoppix.cart_service_reactive.entity.CartProduct;
 import com.shoppix.cart_service_reactive.enums.CartEnum;
 import com.shoppix.cart_service_reactive.events.CartEvent;
 import com.shoppix.cart_service_reactive.exception.CartServiceException;
@@ -15,10 +16,12 @@ import org.springframework.stereotype.Service;
 import com.shoppix.cart_service_reactive.entity.Cart;
 import com.shoppix.cart_service_reactive.repo.CartRepo;
 import org.springframework.transaction.annotation.Transactional;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 @Service
@@ -28,6 +31,9 @@ public class CartService {
 	public CartRepo cartRepo;
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CartService.class);
+
+	public static final String PRODUCT_SERVICE_URL = "http://product-service/products";
+
     @Autowired
     private CartKafkaProducerService cartKafkaProducerService;
 
@@ -153,37 +159,44 @@ public class CartService {
 	 * @param cartProd
 	 * @return
 	 */
-//	public Mono<Cart> addProductToCart(int customerIdForCart, CartProducts cartProd){
-//
-//		LOGGER.info("ADDING PRODUCTS TO CART...");
-//
-//		Mono<Cart> existingCustomerCart = getCartDetails(customerIdForCart);
-//
-//		Flux<CartProducts> cartProducts = existingCustomerCart.flatMapIterable(Cart::getCartProducts);
-//
-//		return existingCustomerCart.publishOn(Schedulers.parallel()).map(existingCart -> {
-//			existingCart.setCustomerIdForCart(customerIdForCart);
-//			Mono<CartProducts> filteredCartProduct = cartProducts.filter(cp -> cp.getProductId() == cartProd.getProductId()).single();
-//			Mono<CartProducts> filteredCartProductsMono = filteredCartProduct != null ? filteredCartProduct.switchIfEmpty(Mono.defer((Supplier<? extends Mono<? extends CartProducts>>) () -> {
-//				LOGGER.info("FINAL CART PRODUCT" + cartProd);
-//				existingCart.getCartProducts().add(cartProd);
-//				return Mono.just(cartProd);
-//			})) : filteredCartProduct.map(fcp -> {
-//				LOGGER.info("UPDATING EXISTING CART PRODUCT " + filteredCartProduct);
-//				CartProducts updatedCartProduct = new CartProducts();
-//				updatedCartProduct.setProductId(cartProd.getProductId());
-//				updatedCartProduct.setProductName(cartProd.getProductName());
-//				updatedCartProduct.setPrice(fcp.getPrice() + cartProd.getPrice());
-//				updatedCartProduct.setQuantity(fcp.getQuantity() + cartProd.getQuantity());
-//				LOGGER.info("FILTERED CART PRODUCT" + filteredCartProduct);
-//				existingCart.getCartProducts().add(updatedCartProduct);
-//				return updatedCartProduct;
-//			});
-//			existingCart.setTotalPrice(existingCart.getTotalPrice() + (cartProd.getPrice() * cartProd.getQuantity()));
-//			createOrUpdateCart(existingCart).subscribeOn(Schedulers.parallel());
-//			return existingCart;
-//		}).delaySubscription(Duration.ofMillis(3000));
-//	}
+	public Mono<Cart> addProductToCart(int customerIdForCart, CartProduct cartProd){
+
+		LOGGER.info("ADDING PRODUCTS TO CART...");
+
+		Mono<Cart> existingCustomerCart = getCartDetails(customerIdForCart);
+
+		Mono<Product> product = webClientBuilder.build()
+				.get()
+				.uri(PRODUCT_SERVICE_URL.concat("/filterProductById/"+cartProduct.getProductId()))
+				.retrieve()
+				.bodyToMono(Product.class)
+				.subscribeOn(Schedulers.parallel());
+
+		Flux<CartProduct> cartProducts = existingCustomerCart.flatMapIterable(Cart::getCartProducts);
+
+		return existingCustomerCart.publishOn(Schedulers.parallel()).map(existingCart -> {
+			existingCart.setCustomerIdForCart(customerIdForCart);
+			Mono<CartProduct> filteredCartProduct = cartProducts.filter(cp -> cp.getProductId() == cartProd.getProductId()).single();
+			Mono<CartProduct> filteredCartProductsMono = filteredCartProduct != null ? filteredCartProduct.switchIfEmpty(Mono.defer((Supplier<? extends Mono<? extends CartProduct>>) () -> {
+				LOGGER.info("FINAL CART PRODUCT" + cartProd);
+				existingCart.getCartProducts().add(cartProd);
+				return Mono.just(cartProd);
+			})) : filteredCartProduct.map(fcp -> {
+				LOGGER.info("UPDATING EXISTING CART PRODUCT " + filteredCartProduct);
+				CartProduct updatedCartProduct = new CartProduct();
+				updatedCartProduct.setProductId(cartProd.getProductId());
+				updatedCartProduct.setProductName(cartProd.getProductName());
+				updatedCartProduct.setPrice(fcp.getPrice() + cartProd.getPrice());
+				updatedCartProduct.setQuantity(fcp.getQuantity() + cartProd.getQuantity());
+				LOGGER.info("FILTERED CART PRODUCT" + filteredCartProduct);
+				existingCart.getCartProducts().add(updatedCartProduct);
+				return updatedCartProduct;
+			});
+			existingCart.setTotalPrice(existingCart.getTotalPrice() + (cartProd.getPrice() * cartProd.getQuantity()));
+			createOrUpdateCart(existingCart).subscribeOn(Schedulers.parallel());
+			return existingCart;
+		}).delaySubscription(Duration.ofMillis(3000));
+	}
 
 	/**
 	 * WILL BE CONTROLLED BY USER AND ADMIN BOTH
@@ -194,25 +207,25 @@ public class CartService {
 	 * @return
 	 * @throws CartServiceException
 	 */
-//	public Mono<AtomicReference<String>> deleteProductsFromCart(int customerIdForCart, int productId) throws CartServiceException{
-//		Mono<Cart> customerCart = getCartDetails(customerIdForCart);
-//
-//		AtomicReference<String> cartProductDeleted = new AtomicReference<>("SUCCESS");
-//
-//		Mono<AtomicReference<String>> productInCartMessage = customerCart.map(custoCart -> {
-//			custoCart.getCartProducts().stream().forEach(cartProduct -> {
-//				if(cartProduct.getProductId() == productId){
-//					custoCart.getCartProducts().remove(cartProduct);
-//					custoCart.setTotalPrice(custoCart.getTotalPrice()-cartProduct.getPrice());
-//					custoCart.setCustomerIdForCart(custoCart.getCustomerIdForCart());
-//					createOrUpdateCart(custoCart).subscribe();
-//					cartProductDeleted.set("SUCCESS");
-//				}
-//			});
-//			return cartProductDeleted;
-//		}).delaySubscription(Duration.ofMillis(3000));
-//		return productInCartMessage;
-//	}
+	public Mono<AtomicReference<String>> deleteProductsFromCart(int customerIdForCart, int productId) throws CartServiceException{
+		Mono<Cart> customerCart = getCartDetails(customerIdForCart);
+
+		AtomicReference<String> cartProductDeleted = new AtomicReference<>("SUCCESS");
+
+		Mono<AtomicReference<String>> productInCartMessage = customerCart.map(custoCart -> {
+			custoCart.getCartProducts().stream().forEach(cartProduct -> {
+				if(cartProduct.getProductId() == productId){
+					custoCart.getCartProducts().remove(cartProduct);
+					custoCart.setTotalPrice(custoCart.getTotalPrice()-cartProduct.getPrice());
+					custoCart.setCustomerIdForCart(custoCart.getCustomerIdForCart());
+					createOrUpdateCart(custoCart).subscribe();
+					cartProductDeleted.set("SUCCESS");
+				}
+			});
+			return cartProductDeleted;
+		}).delaySubscription(Duration.ofMillis(3000));
+		return productInCartMessage;
+	}
 
 	@Transactional
 	public Mono<ResponseEntity<String>> deleteCartWhenCustomerIsDeleted( int customerIdForCart) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.inventory_service_reactive.entity.Inventory;
 import com.shoppix.inventory_service_reactive.enums.InventoryEnum;
+import com.shoppix.inventory_service_reactive.enums.ProductEnum;
 import com.shoppix.inventory_service_reactive.events.InventoryEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +46,7 @@ public class InventoryKafkaConsumerService {
         InventoryEvent inventoryEvent = objectMapper.readValue(message, InventoryEvent.class);
         LOGGER.info("Received Message: {}", message);
         try{
-            if(!inventoryEvent.getInventoryMessageType().equals(InventoryEnum.INVENTORY_INIT_IN_PROGRESS.name())){
+            if(inventoryEvent.getInventoryMessageType().equals(ProductEnum.PRODUCT_CREATE_SUCCESS.name())){
                 LOGGER.info("RECEIVED INVENTORY OBJECT ["+inventoryEvent.getInventory()+"]");
                 inventoryService.saveOrUpdateInventory(inventoryEvent.getInventory()).subscribe();
             }

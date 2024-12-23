@@ -2,8 +2,8 @@ package com.shoppix.customer_service_reactive.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shoppix.customer_service_reactive.bean.Address;
-import com.shoppix.customer_service_reactive.bean.Customer;
+import com.shoppix.customer_service_reactive.entity.Address;
+import com.shoppix.customer_service_reactive.entity.Customer;
 import com.shoppix.customer_service_reactive.enums.CustomerEnum;
 import com.shoppix.customer_service_reactive.events.CartEvent;
 import com.shoppix.customer_service_reactive.events.CustomerEvent;
@@ -11,7 +11,6 @@ import com.shoppix.customer_service_reactive.exception.CustomerServiceException;
 import com.shoppix.customer_service_reactive.model.Cart;
 import com.shoppix.customer_service_reactive.model.CartProduct;
 import com.shoppix.customer_service_reactive.model.Order;
-import com.shoppix.customer_service_reactive.model.Product;
 import com.shoppix.customer_service_reactive.repo.CustomerRepo;
 import com.shoppix.customer_service_reactive.util.CustomerUtil;
 import org.slf4j.Logger;
@@ -63,8 +62,6 @@ public class CustomerService {
     private final ObjectMapper objectMapper;
 
     public static final String CART_SERVICE_URL = "http://cart-service/cart";
-
-    public static final String PRODUCT_SERVICE_URL = "http://product-service/products";
 
     @Autowired
     public CustomerService(ObjectMapper objectMapper) {
@@ -167,7 +164,7 @@ public class CustomerService {
             return updatedCustomer;
         });
 
-        return updatedCustomerData.delaySubscription(Duration.ofMillis(3000));
+        return updatedCustomerData;
     }
 
     /**
@@ -181,15 +178,11 @@ public class CustomerService {
      */
     public Mono<Customer> getCustomerById(int customerId) throws CustomerServiceException {
 
+        LOGGER.info("FETCHING CUSTOMER DETAILS WITH CUSTOMER ID ["+customerId+"]...");
+
         Mono<Customer> customerMono = customerRepo.findById(customerId);
 
-        LOGGER.info("FETCHED CUSTOMER DETAILS WITH CUSTOMER ID ["+customerId+"] SUCCESSFULLY");
-
-        return customerMono.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
-                    LOGGER.error("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + customerId + "]");
-                    throw new CustomerServiceException("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + customerId + "]");
-                }
-        )).delaySubscription(Duration.ofMillis(3000));
+        return customerMono.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.empty());
     }
 
     /**
@@ -205,14 +198,14 @@ public class CustomerService {
 
         Mono<Customer> customerMono = customerRepo.findByEmailId(emailId);
 
-        LOGGER.info("FETCHED CUSTOMER DETAILS WITH CUSTOMER EMAIL ID ["+emailId+"]  SUCCESSFULLY");
+        LOGGER.info("FETCHING CUSTOMER DETAILS WITH CUSTOMER EMAIL ID ["+emailId+"]...");
 
         LOGGER.info("CUSTOMER BODY OBJECT ["+customerMono.toString()+"]");
         return customerMono.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
                     LOGGER.error("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + emailId + "]");
                     throw new CustomerServiceException("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + emailId + "]");
                 }
-        )).delaySubscription(Duration.ofMillis(3000));
+        ));
     }
 
     /**
@@ -239,7 +232,7 @@ public class CustomerService {
                 LOGGER.error("ERROR FETCHING CUSTOMER ADDRESS WITH CUSTOMER EMAIL ID [" + emailId + "]");
                 throw new CustomerServiceException("ERROR FETCHING CUSTOMER ADDRESS WITH CUSTOMER EMAIL ID [" + emailId + "]");
                 }
-        )).delaySubscription(Duration.ofMillis(3000));
+        ));
     }
 
     /**
@@ -257,7 +250,7 @@ public class CustomerService {
         return allCustomerInfo.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
             LOGGER.error("ERROR FETCHING ALL CUSTOMER INFO");
             throw new CustomerServiceException("ERROR FETCHING ALL CUSTOMER INFO");
-        })).delaySubscription(Duration.ofMillis(3000));
+        }));
     }
 
     /**
@@ -328,7 +321,7 @@ public class CustomerService {
         return customerOrders.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
             LOGGER.error("YOU HAVEN'T ORDERED ANYTHING YET");
             throw new CustomerServiceException("YOU HAVEN'T ORDERED ANYTHING YET");
-        })).delaySubscription(Duration.ofMillis(3000));
+        }));
     }
 
     /*CUSTOMER-CART MICROSERVICE*/
@@ -355,7 +348,7 @@ public class CustomerService {
 
         Mono<Product> product = webClientBuilder.build()
                 .get()
-                    .uri(PRODUCT_SERVICE_URL.concat("/getProductById/"+cartProduct.getProductId()))
+                    .uri(PRODUCT_SERVICE_URL.concat("/filterProductById/"+cartProduct.getProductId()))
                         .retrieve()
                             .bodyToMono(Product.class)
                                 .subscribeOn(Schedulers.parallel());
@@ -368,6 +361,7 @@ public class CustomerService {
                 CartProduct cartProductToAdd = new CartProduct();
                 cartProductToAdd.setProductId(prod.getProductId());
                 cartProductToAdd.setProductName(prod.getProductName());
+
                 cartProductToAdd.setPrice(prod.getPrice());
                 cartProductToAdd.setStockStatus(prod.getStockStatus());
                 cartProductToAdd.setQuantity(cartProduct.getQuantity());
@@ -397,7 +391,7 @@ public class CustomerService {
                 return cartProductToAdd;
             });
             return existingCart;
-        }).delaySubscription(Duration.ofMillis(3000));
+        });
     }
 
     /**
@@ -435,7 +429,7 @@ public class CustomerService {
                 }
             });
             return cartProductDeleted;
-        }).delaySubscription(Duration.ofMillis(3000));
+        });
         return productInCartMessage;
     }
 
