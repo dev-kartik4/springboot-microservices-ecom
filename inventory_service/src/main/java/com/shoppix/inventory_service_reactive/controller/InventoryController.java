@@ -68,9 +68,9 @@ public class InventoryController {
 	@CircuitBreaker(name = INVENTORY_SERVICE,fallbackMethod = "inventoryFallback")
 	@Retry(name = INVENTORY_SERVICE,fallbackMethod = "inventoryFallback")
 	@RateLimiter(name = INVENTORY_SERVICE,fallbackMethod = "inventoryFallback")
-	public ResponseEntity<Mono<Inventory>> getInventoryByProductId(@PathVariable("productId") long productId) {
+	public ResponseEntity<Mono<Inventory>> getInventoryByProductId(@PathVariable("productId") String parentProductId) {
 
-		Mono<Inventory> inventory = inventoryService.getInvByProductId(productId);
+		Mono<Inventory> inventory = inventoryService.getInvByProductId(parentProductId);
 
 		return new ResponseEntity<>(inventory, HttpStatus.OK);
 	}

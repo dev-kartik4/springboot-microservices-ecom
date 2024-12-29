@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class InventoryEvent {
 
-    private int inventoryId;
+    private long inventoryId;
 
     private String parentProductId;
 

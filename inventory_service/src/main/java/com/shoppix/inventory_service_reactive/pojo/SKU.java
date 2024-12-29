@@ -11,7 +11,5 @@ public class SKU {
 
     private String skuCode;
 
-    private String productId;
-
-    private int quantityInStock;
+    private int quantityOfStock;
 }

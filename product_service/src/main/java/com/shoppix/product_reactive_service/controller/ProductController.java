@@ -1,10 +1,8 @@
 package com.shoppix.product_reactive_service.controller;
 
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.shoppix.product_reactive_service.exception.ProductServiceException;
-import com.shoppix.product_reactive_service.pojo.Offers;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +112,14 @@ public class ProductController {
 			LOGGER.error("ERROR DELETING PRODUCT WITH PRODUCT ID ["+productId+"] | NOT FOUND");
 			throw new ProductServiceException("ERROR DELETING PRODUCT WITH PRODUCT ID ["+productId+"] | NOT FOUND");
 		}
+	}
+
+	@GetMapping("/check-pincode/{productId}/{pincode}")
+	public ResponseEntity<Mono<String>> checkPincode(@PathVariable("productId") String productId,@PathVariable("pincode") String pincode) throws ProductServiceException{
+
+		Mono<String> checkPincodeResponse = productService.checkServiceablePincode(productId,pincode);
+
+		return new ResponseEntity(checkPincodeResponse, HttpStatus.OK);
 	}
 
 	/* ALL MAPPINGS FOR PRODUCT-INVENTORY MICROSERVICE*/

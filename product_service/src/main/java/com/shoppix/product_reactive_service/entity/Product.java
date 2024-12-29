@@ -1,6 +1,5 @@
 package com.shoppix.product_reactive_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,11 +16,8 @@ import java.util.List;
 @Document(collection = "PRODUCT_DETAILS")
 public class Product {
 
-	@Transient
-	public static final String SEQUENCE_NAME = "product_sequence";
-
+	@Id
 	@Field(name = "PARENT_PRODUCT_ID")
-	@JsonIgnore
 	private String parentProductId;
 
 	@Field(name = "PRODUCT_NAME")
@@ -44,6 +40,15 @@ public class Product {
 
 	@Field(name = "PRODUCT_SELLER")
 	private String productSeller;
+
+	@Field(name = "MERCHANT_ID")
+	private long merchantId;
+
+	@Field(name = "MERCHANT_SELLING_NAME")
+	private String merchantSellingName;
+
+	@Field(name = "AVAILABLE_PINCODES_FOR_PRODUCT")
+	private List<String> availablePincodesForProduct;
 
 	@Field(name = "PRODUCT_EVENT_STATUS")
 	private String eventStatus;

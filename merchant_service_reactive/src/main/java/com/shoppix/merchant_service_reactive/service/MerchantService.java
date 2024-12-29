@@ -1,10 +1,15 @@
 package com.shoppix.merchant_service_reactive.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shoppix.merchant_service_reactive.MerchantEnum;
+import com.shoppix.merchant_service_reactive.entity.MerchantProducts;
+import com.shoppix.merchant_service_reactive.enums.MerchantEnum;
 import com.shoppix.merchant_service_reactive.entity.MerchantDetails;
+import com.shoppix.merchant_service_reactive.enums.MerchantProductEnum;
+import com.shoppix.merchant_service_reactive.events.MerchantProductEvent;
 import com.shoppix.merchant_service_reactive.exception.MerchantServiceException;
 import com.shoppix.merchant_service_reactive.repo.MerchantRepo;
+import com.shoppix.merchant_service_reactive.util.MerchantUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +20,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -28,9 +34,12 @@ public class MerchantService {
     public MerchantKafkaProducerService merchantKafkaProducerService;
 
     @Autowired
+    public MerchantUtil merchantUtil;
+
+    @Autowired
     public WebClient.Builder webClientBuilder;
 
-    @Value("${spring.kafka.topic.product-topic}")
+    @Value("${spring.kafka.topic.merchant-topic}")
     private String productTopicName;
 
     private final ObjectMapper objectMapper;
@@ -39,14 +48,15 @@ public class MerchantService {
 
     @Autowired
     public MerchantService(ObjectMapper objectMapper) {
+        this.merchantKafkaProducerService = merchantKafkaProducerService;
         this.objectMapper = objectMapper;
     }
 
     public Mono<MerchantDetails> createOrUpdateMerchantDetails(MerchantDetails merchantDetails){
 
-        LOGGER.info("NEW MERCHANT REGISTRATION IN PROGRESS");
+        LOGGER.info("MERCHANT DETAILS CREATE OR UPDATE IN PROGRESS");
 
-        return merchantRepo.findById(merchantDetails.getMerchantId())
+        return merchantRepo.findByMerchantSellerName(merchantDetails.getMerchantSellingName())
                 .switchIfEmpty(Mono.defer(() -> createNewMerchant(merchantDetails)))
                 .flatMap(existingMerchant -> updateExistingMerchant(existingMerchant, merchantDetails));
     }
@@ -55,7 +65,7 @@ public class MerchantService {
         LOGGER.info("MERCHANT REGISTRATION IN PROGRESS");
 
         MerchantDetails newMerchantDetails = new MerchantDetails();
-        newMerchantDetails.setMerchantId(merchantDetails.getMerchantId());
+        newMerchantDetails.setMerchantId(merchantUtil.generateMerchantId());
         newMerchantDetails.setMerchantPersonName(merchantDetails.getMerchantPersonName());
         newMerchantDetails.setMerchantSellingName(merchantDetails.getMerchantSellingName());
         newMerchantDetails.setMerchantEmailAddress(merchantDetails.getMerchantEmailAddress());
@@ -63,13 +73,13 @@ public class MerchantService {
         newMerchantDetails.setMerchantFullAddress(merchantDetails.getMerchantFullAddress());
         newMerchantDetails.setMerchantBankAccountNumber(merchantDetails.getMerchantBankAccountNumber());
         newMerchantDetails.setMerchantBankingName(merchantDetails.getMerchantBankingName());
+        newMerchantDetails.setMerchantBankIfscCode(merchantDetails.getMerchantBankIfscCode());
         newMerchantDetails.setGstInTaxInformation(merchantDetails.getGstInTaxInformation());
-        newMerchantDetails.setListOfProductsByMerchant(merchantDetails.getListOfProductsByMerchant());
-        newMerchantDetails.setInventoryCode(merchantDetails.getInventoryCode());
         newMerchantDetails.setEventStatus(MerchantEnum.MERCHANT_REGISTERED.name());
         newMerchantDetails.setCreatedDateTime(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
         newMerchantDetails.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
         newMerchantDetails.setMerchantExistence(true);
+        newMerchantDetails.setListOfProductsByMerchant(new ArrayList<>());
 
         return merchantRepo.insert(newMerchantDetails).subscribeOn(Schedulers.parallel())
                 .doOnSuccess(savedMerchant -> System.out.println("MERCHANT CREATED SUCCESSFULLY " + savedMerchant))
@@ -77,7 +87,7 @@ public class MerchantService {
                     LOGGER.error("MERCHANT CREATION FAILED");
                     newMerchantDetails.setEventStatus(MerchantEnum.MERCHANT_DELETED.name());
                     newMerchantDetails.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
-                    deleteByMerchantId(merchantDetails.getMerchantId());
+                    deleteByMerchantId(merchantDetails.getMerchantId()).subscribe();
                     LOGGER.error("OOPS TECHNICAL ERROR! NEW MERCHANT CREATING PROCESS FAILED", e);
                     return Mono.error(new MerchantServiceException("OOPS TECHNICAL ERROR! NEW MERCHANT CREATING PROCESS FAILED", e));
                 });
@@ -94,13 +104,21 @@ public class MerchantService {
         existingMerchant.setMerchantFullAddress(updatedMerchantDetails.getMerchantFullAddress());
         existingMerchant.setMerchantBankAccountNumber(updatedMerchantDetails.getMerchantBankAccountNumber());
         existingMerchant.setMerchantBankingName(updatedMerchantDetails.getMerchantBankingName());
+        existingMerchant.setMerchantBankIfscCode(updatedMerchantDetails.getMerchantBankIfscCode());
         existingMerchant.setGstInTaxInformation(updatedMerchantDetails.getGstInTaxInformation());
-        existingMerchant.setListOfProductsByMerchant(updatedMerchantDetails.getListOfProductsByMerchant());
-        existingMerchant.setInventoryCode(updatedMerchantDetails.getInventoryCode());
         existingMerchant.setEventStatus(MerchantEnum.MERCHANT_UPDATED.name());
         existingMerchant.setCreatedDateTime(existingMerchant.getCreatedDateTime());
         existingMerchant.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
         existingMerchant.setMerchantExistence(true);
+
+        updatedMerchantDetails.getListOfProductsByMerchant().forEach(product -> {
+            if(!existingMerchant.getListOfProductsByMerchant().contains(product)) {
+                existingMerchant.getListOfProductsByMerchant().add(populateMerchantProductData(existingMerchant.getMerchantId(),product));
+            } else{
+                existingMerchant.getListOfProductsByMerchant().remove(product);
+                existingMerchant.getListOfProductsByMerchant().add(populateMerchantProductData(existingMerchant.getMerchantId(),product));
+            }
+        });
 
         return merchantRepo.save(existingMerchant)
                 .doOnSuccess(savedMerchant -> LOGGER.info("MERCHANT UPDATED SUCCESSFULLY"))
@@ -108,6 +126,33 @@ public class MerchantService {
                     LOGGER.error("FAILED TO UPDATE MERCHANT", e);
                     return Mono.error(new MerchantServiceException("FAILED TO UPDATE MERCHANT", e));
                 });
+    }
+
+    private MerchantProducts populateMerchantProductData(long merchantId,MerchantProducts existingMerchantProducts) {
+
+        MerchantProducts merchantProduct = new MerchantProducts();
+        merchantProduct.setMerchantId(merchantId);
+        merchantProduct.setMerchantSellingName(existingMerchantProducts.getMerchantSellingName());
+        merchantProduct.setParentProductId(existingMerchantProducts.getParentProductId());
+        merchantProduct.setProductName(existingMerchantProducts.getProductName());
+        merchantProduct.setInventoryId(existingMerchantProducts.getInventoryId());
+        merchantProduct.setInventoryCode(existingMerchantProducts.getInventoryCode());
+
+        // Populate ProductVariations
+//        List<MerchantProducts> populatedProductVariations = product.getProductVariations().stream()
+//                .map(this::populateProductVariationData)
+//                .collect(Collectors.toList());
+//        merchantProduct.setProductVariations(populatedProductVariations);
+//
+//        // Populate other fields
+//        merchantProduct.setCategory(product.getCategory());
+//        merchantProduct.setSubCategory(product.getSubCategory());
+//        merchantProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
+//        merchantProduct.setProductManufacturer(product.getProductManufacturer());
+//        merchantProduct.setProductSeller(product.getProductSeller());
+//        merchantProduct.setAvailablePincodesForProduct(product.getAvailablePincodesForProduct());
+
+        return merchantProduct;
     }
 
     public Mono<MerchantDetails> getMerchantById(long merchantId) throws MerchantServiceException{
@@ -137,6 +182,8 @@ public class MerchantService {
         return merchantDetails.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.empty());
     }
 
+
+
     public Mono<Boolean> deleteByMerchantId(long merchantId) {
 
         LOGGER.info("IN PROCESS OF DELETING MERCHANT WITH MERCHANT ID [" + merchantId + "]");
@@ -147,6 +194,25 @@ public class MerchantService {
                     LOGGER.error("Error during merchant deletion process", e);
                     return Mono.just(false);
                 });
+    }
+
+    private void sendEventToProduct(MerchantDetails merchantDetails) throws JsonProcessingException {
+
+        try{
+            LOGGER.info("CREATING NEW PRODUCT BY MERCHANT...");
+            MerchantProductEvent merchantProductEvent = new MerchantProductEvent();
+            merchantProductEvent.setMerchantId(merchantDetails.getMerchantId());
+            merchantProductEvent.setMerchantMessageType(MerchantProductEnum.MERCHANT_PRODUCT_CREATE.name());
+            //merchantProductEvent.setMerchantProducts(merchantDetails.getListOfProductsByMerchant());
+
+            String merchantProductAsMessage = objectMapper.writeValueAsString(merchantProductEvent);
+            merchantKafkaProducerService.sendMessage(productTopicName,merchantProductAsMessage);
+            LOGGER.info("PRODUCT CREATED BY MERCHANT. WILL BE DISPLAYED SHORTLY");
+        } catch (Exception e) {
+            LOGGER.error("ERROR DURING PROCESS OF CREATING NEW PRODUCT BY MERCHANT", e);
+            throw new RuntimeException(e);
+        }
+
     }
 
     private String generateLastUpdatedDateTime(Date date) {

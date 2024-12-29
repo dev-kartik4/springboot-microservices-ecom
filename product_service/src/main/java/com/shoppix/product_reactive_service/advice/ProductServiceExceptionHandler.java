@@ -13,7 +13,7 @@ public class ProductServiceExceptionHandler {
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(ProductServiceException.class)
-    public ResponseEntity<ResponseErrorMessage> handleCustomerServiceException(ProductServiceException productEx){
+    public ResponseEntity<ResponseErrorMessage> handleProductServiceException(ProductServiceException productEx){
 
         ResponseErrorMessage responseErrorMessage = new ResponseErrorMessage();
         responseErrorMessage.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());

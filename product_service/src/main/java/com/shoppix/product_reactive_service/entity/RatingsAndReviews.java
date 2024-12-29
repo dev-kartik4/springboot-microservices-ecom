@@ -31,4 +31,7 @@ public class RatingsAndReviews {
 
     @Field(name = "IMAGES_UPLOADED_BY_REVIEWER")
     private List<String> imagesUploadedInReviews;
+
+    @Field(name = "FEEDBACK_FROM_SELLER")
+    private String feedbackFromSeller;
 }

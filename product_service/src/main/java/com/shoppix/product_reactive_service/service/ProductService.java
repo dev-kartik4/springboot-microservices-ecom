@@ -9,10 +9,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.product_reactive_service.entity.*;
 import com.shoppix.product_reactive_service.enums.InventoryEnum;
+import com.shoppix.product_reactive_service.enums.MerchantProductEnum;
 import com.shoppix.product_reactive_service.enums.ProductEnum;
 import com.shoppix.product_reactive_service.events.InventoryEvent;
+import com.shoppix.product_reactive_service.events.MerchantProductEvent;
 import com.shoppix.product_reactive_service.exception.ProductServiceException;
 import com.shoppix.product_reactive_service.pojo.Inventory;
+import com.shoppix.product_reactive_service.pojo.MerchantProducts;
 import com.shoppix.product_reactive_service.utility.ProductIdGenerator;
 import org.apache.kafka.common.utils.Utils;
 import org.slf4j.Logger;
@@ -45,6 +48,9 @@ public class ProductService{
     @Autowired
     private ProductKafkaProducerService productKafkaProducerService;
 
+	@Value("${spring.kafka.topic.product-topic}")
+	private String productTopic;
+
 	@Value("${spring.kafka.topic.inventory-topic}")
 	private String inventoryTopic;
 
@@ -72,20 +78,20 @@ public class ProductService{
 
 	public Mono<Product> createOrUpdateProduct(Product product) {
 
-		if (product.getParentProductId() == null) {
-			return Mono.error(new ProductServiceException("Product ID must not be null"));
-		}
+		LOGGER.info("CREATING NEW PRODUCT IN PROGRESS");
 
-		return productRepo.findById(product.getParentProductId())
+		return productRepo.findByParentProductId(product.getParentProductId())
 				.switchIfEmpty(Mono.defer(() -> createNewProduct(product)))
-				.flatMap(existingProduct -> updateProduct(product.getParentProductId(), existingProduct));
+				.flatMap(existingProduct -> updateProduct(existingProduct, product));
 	}
 
 
 	private Mono<Product> createNewProduct(Product product) {
 
+		LOGGER.info("CREATING NEW PRODUCT...");
+
 		Product newProduct = new Product();
-		if(Boolean.TRUE.equals(Utils.isBlank(product.getParentProductId()))){
+		if(product.getParentProductId() == null){
 			newProduct.setParentProductId(sequenceGeneratorService.generateProductUniqueID(product.getCategory()));
 		}else{
 			newProduct.setParentProductId(product.getParentProductId());
@@ -95,6 +101,9 @@ public class ProductService{
 		newProduct.setCategory(product.getCategory());
 		newProduct.setSubCategory(product.getSubCategory());
 		newProduct.setProductVariations(product.getProductVariations());
+		newProduct.setMerchantId(product.getMerchantId());
+		newProduct.setMerchantSellingName(product.getMerchantSellingName());
+		newProduct.setAvailablePincodesForProduct(product.getAvailablePincodesForProduct());
 		newProduct.setEventStatus(ProductEnum.PRODUCT_CREATE_SUCCESS.name());
 		newProduct.setCreatedDateTime(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
 		newProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
@@ -106,12 +115,13 @@ public class ProductService{
 			}else{
 				variation.setVariantProductId(variation.getVariantProductId());
 			}
-			if(variation.getSkuCode().isEmpty()){
-				variation.setSkuCode(sequenceGeneratorService
+			if(variation.getSkuData().getSkuCode().isEmpty()){
+				variation.getSkuData().setSkuCode(sequenceGeneratorService
 						.generateSKUCode(product.getCategory(),product.getSubCategory(),variation.getBrand(),variation.getProductDescription().getColor(),  variation.getProductDescription().getSize()));
 			}else{
-				variation.setSkuCode(variation.getSkuCode());
+				variation.getSkuData().setSkuCode(variation.getSkuData().getSkuCode());
 			}
+			variation.getSkuData().setQuantityOfStock(variation.getSkuData().getQuantityOfStock());
 			variation.setBrand(variation.getBrand());
 			variation.setProductAvailabilityStatus(variation.getProductAvailabilityStatus());
 			variation.setAverageRating(variation.getAverageRating());
@@ -121,36 +131,35 @@ public class ProductService{
 			variation.setProductDescription(variation.getProductDescription());
 		});
 
-		// Create and populate inventory for the new product
 		Inventory inventory = new Inventory();
-		inventory.setProductId(newProduct.getParentProductId());
+		inventory.setParentProductId(newProduct.getParentProductId());
 		inventory.setProductName(newProduct.getProductName());
+		inventory.setMerchantId(newProduct.getMerchantId());
+		inventory.setMerchantSellingName(newProduct.getMerchantSellingName());
 		inventory.setCategory(newProduct.getCategory());
 		inventory.setSubCategory(newProduct.getSubCategory());
 		inventory.setProductVariants(newProduct.getProductVariations());
 
-		// Handle product fulfillment channel logic
 		if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_MERCHANT.name())) {
 			inventory.setProductFulfillmentChannel(ProductEnum.PRODUCT_FB_MERCHANT.name());
 			newProduct.setProductManufacturer(product.getProductManufacturer());
-			inventory.setProductSeller(product.getProductManufacturer());
+			inventory.setProductSeller(product.getProductSeller());
 		} else if (product.getProductFulfillmentChannel().equals(ProductEnum.PRODUCT_FB_SHOPPIX.name())){
 			inventory.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
 			newProduct.setProductManufacturer(product.getProductManufacturer());
-			inventory.setProductSeller(product.getProductManufacturer());
+			inventory.setProductSeller(product.getProductSeller());
 		}
 
-		// Save the product and inventory
 		return productRepo.insert(newProduct).subscribeOn(Schedulers.parallel())
 				.doOnSuccess(savedProduct -> {
 					LOGGER.info("PRODUCT CREATED SUCCESSFULLY");
 					LOGGER.info("SENDING REQUEST FOR INITIATION OF NEW STOCK FOR PRODUCT ID [" + newProduct.getParentProductId() + "]");
-					inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_IN_PROGRESS.name());
+					inventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_IN_PROGRESS.name());
 					inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
 					createOrUpdateInventoryForProduct(newProduct.getParentProductId(), inventory);
 				})
 				.onErrorResume(e -> {
-					inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_FAILED.name());
+					inventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
 					inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
 					deleteProductById(newProduct.getParentProductId());
 					LOGGER.error("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e);
@@ -160,27 +169,30 @@ public class ProductService{
 
 
 
-	private Mono<Product> updateProduct(String productId, Product updatedProduct) {
-		return productRepo.findById(productId)
-				.flatMap(existingProduct -> {
-					existingProduct.setParentProductId(updatedProduct.getParentProductId());
-					existingProduct.setProductName(updatedProduct.getProductName());
-					existingProduct.setProductVariations(updatedProduct.getProductVariations());
-					existingProduct.setCategory(updatedProduct.getCategory());
-					existingProduct.setSubCategory(updatedProduct.getSubCategory());
-					existingProduct.setProductFulfillmentChannel(updatedProduct.getProductFulfillmentChannel());
-					existingProduct.setProductManufacturer(updatedProduct.getProductManufacturer());
-					existingProduct.setProductSeller(updatedProduct.getProductSeller());
-					existingProduct.setEventStatus(ProductEnum.PRODUCT_UPDATED.name());
-					existingProduct.setCreatedDateTime(updatedProduct.getCreatedDateTime());
-					existingProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
+	private Mono<Product> updateProduct(Product existingProduct, Product updatedProduct) {
 
-					return productRepo.save(existingProduct)
-							.doOnSuccess(savedProduct -> LOGGER.info("PRODUCT UPDATED WITH PRODUCT ID: {}", savedProduct.getParentProductId()))
-							.onErrorResume(e -> {
-								LOGGER.error("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: {}", updatedProduct.getParentProductId(), e);
-								return Mono.error(new ProductServiceException("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: " + updatedProduct.getParentProductId()));
-							});
+		LOGGER.info("UPDATING PRODUCT IN PROGRESS");
+
+		existingProduct.setParentProductId(existingProduct.getParentProductId());
+		existingProduct.setProductName(updatedProduct.getProductName());
+		existingProduct.setProductVariations(updatedProduct.getProductVariations());
+		existingProduct.setCategory(updatedProduct.getCategory());
+		existingProduct.setSubCategory(updatedProduct.getSubCategory());
+		existingProduct.setProductFulfillmentChannel(updatedProduct.getProductFulfillmentChannel());
+		existingProduct.setProductManufacturer(updatedProduct.getProductManufacturer());
+		existingProduct.setProductSeller(updatedProduct.getProductSeller());
+		existingProduct.setMerchantId(updatedProduct.getMerchantId());
+		existingProduct.setMerchantSellingName(updatedProduct.getMerchantSellingName());
+		existingProduct.setAvailablePincodesForProduct(updatedProduct.getAvailablePincodesForProduct());
+		existingProduct.setEventStatus(ProductEnum.PRODUCT_UPDATED.name());
+		existingProduct.setCreatedDateTime(existingProduct.getCreatedDateTime());
+		existingProduct.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
+
+		return productRepo.save(existingProduct)
+				.doOnSuccess(savedProduct -> LOGGER.info("PRODUCT UPDATED WITH PRODUCT ID: {}", savedProduct.getParentProductId()))
+				.onErrorResume(e -> {
+					LOGGER.error("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: {}", updatedProduct.getParentProductId(), e);
+					return Mono.error(new ProductServiceException("FAILED TO UPDATE PRODUCT WITH PRODUCT ID: " + updatedProduct.getParentProductId()));
 				});
 	}
 
@@ -226,11 +238,10 @@ public class ProductService{
 		}));
 	}
 
-	public Mono<MerchantDetails> getMerchantDetails(String merchantId,String parentProductId)	throws ProductServiceException{
-		Mono<MerchantDetails> merchantDetails = productRepo.findMerchantDetailsByParentProductId(merchantId,parentProductId);
-		merchantDetails.flatMap(merchantData ->{
-			merchantData.getListOfProductsByMerchant().stream().map(product -> productRepo.findById(parentProductId)).findFirst().ifPresent(product -> {});
-		});
+	public Mono<String> checkServiceablePincode(String productId, String pincode) throws ProductServiceException {
+
+		return getProductById(productId).map(product -> product.getAvailablePincodesForProduct().contains(pincode) ?
+				"Product Deliverable at - "+pincode : "Sorry, we cannot deliver this product in your area");
 	}
 
 	/**
@@ -283,9 +294,9 @@ public class ProductService{
 		try{
 			LOGGER.info("PRODUCT DETAILS UPDATING ...");
 
-			Mono<Product> productDetails = getProductById(newInventory.getProductId()).publishOn(Schedulers.parallel());
+			Mono<Product> productDetails = getProductById(newInventory.getParentProductId()).publishOn(Schedulers.parallel());
 			productDetails.flatMap(updatedProduct -> {
-				updatedProduct.setParentProductId(newInventory.getProductId());
+				updatedProduct.setParentProductId(newInventory.getParentProductId());
 				updatedProduct.setProductName(newInventory.getProductName());
 				updatedProduct.setCategory(newInventory.getCategory());
 				updatedProduct.setSubCategory(newInventory.getSubCategory());

@@ -20,11 +20,11 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
-      product-topic: product-topic
+      merchant-topic: merchant-topic
     dead-letter:
-      product-topic-dlt: product-topic-dlt
+      merchant-dlt: merchant-dlt
     producer:
-      product:
+      merchant:
         key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     consumer:
@@ -39,7 +39,7 @@ spring:
             trusted:
               packages: "*"
       topics:
-        - product-topic
+        - merchant-topic
 
 eureka:
   client:

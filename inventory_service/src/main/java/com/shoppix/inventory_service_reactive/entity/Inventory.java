@@ -2,7 +2,6 @@ package com.shoppix.inventory_service_reactive.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.shoppix.inventory_service_reactive.pojo.ProductVariations;
-import com.shoppix.inventory_service_reactive.pojo.SKU;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +20,7 @@ public class Inventory {
 
 	@Id
 	@Field(name = "INVENTORY_ID")
-	private int inventoryId;
+	private long inventoryId;
 
 	@Field(name = "INVENTORY_CODE")
 	private String inventoryCode;
@@ -31,6 +30,12 @@ public class Inventory {
 
 	@Field(name = "PRODUCT_NAME")
 	private String productName;
+
+	@Field(name = "MERCHANT_ID")
+	private long merchantId;
+
+	@Field(name = "MERCHANT_SELLING_NAME")
+	private String merchantSellingName;
 
 	@Field(name = "ALL_PRODUCT_VARIANTS")
 	private List<ProductVariations> productVariants;
@@ -85,9 +90,6 @@ public class Inventory {
 
 	@Field(name = "PRODUCT_SUPPLIER")
 	private String productSupplier;
-
-	@Field(name = "STOCK_AVAILABLE_LOCATION")
-	private String stockAvailableLocation;
 
 	@Field(name = "EVENT_STATUS")
 	@JsonIgnore

@@ -20,8 +20,10 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
+      merchant-topic: merchant-topic
       inventory-topic: inventory-topic
     dead-letter:
+      merchant-dlt: merchant-dlt
       inventory-dlt: inventory-dlt
     producer:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer

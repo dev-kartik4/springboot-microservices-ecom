@@ -13,11 +13,8 @@ public class SKU{
 
     @Id
     @Field(name = "SKU_CODE")
-    private String skuCode; // SKU code for the variation (e.g., size, color)
-
-    @Field(name = "SKU_PRODUCT_ID")
-    private String productId;  // Linking to Product
+    private String skuCode;
 
     @Field(name = "QUANTITY_IN_STOCK")
-    private int quantityInStock; // How many units of this SKU are in stock
+    private int quantityOfStock;
 }

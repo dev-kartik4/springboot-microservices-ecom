@@ -1,6 +1,5 @@
 package com.shoppix.product_reactive_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.shoppix.product_reactive_service.pojo.Offers;
 import lombok.AllArgsConstructor;
@@ -17,14 +16,10 @@ import java.util.List;
 public class ProductVariations {
 
     @Field(name = "VARIANT_PRODUCT_ID")
-    @JsonIgnore
     private String variantProductId;
 
-    @Field(name = "SKU_CODE")
-    private String skuCode;
-
-    @Field(name = "QUANTITY_IN_STOCK")
-    private int quantityOfStock;
+    @Field(name = "SKU_CODE_DATA")
+    private SKU skuData;
 
     @Field(name = "PRODUCT_DESCRIPTIVE_DETAILS")
     private ProductDescription productDescription;

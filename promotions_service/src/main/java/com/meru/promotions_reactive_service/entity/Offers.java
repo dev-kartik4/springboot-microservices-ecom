@@ -1,18 +1,15 @@
-package com.shoppix.merchant_service_reactive.pojo;
+package com.meru.promotions_reactive_service.entity;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.util.Date;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Offers {
 
 	@Field(name = "OFFER_ID")

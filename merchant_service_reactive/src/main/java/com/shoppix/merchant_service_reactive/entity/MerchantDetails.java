@@ -1,9 +1,6 @@
 package com.shoppix.merchant_service_reactive.entity;
 
-import com.shoppix.merchant_service_reactive.pojo.Product;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -11,6 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.util.List;
 
 @Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "MERCHANT_DETAILS")
@@ -44,14 +43,14 @@ public class MerchantDetails {
     @Field(name = "MERCHANT_BANK_IFSC_CODE")
     private String merchantBankIfscCode;
 
+    @Field(name = "PAN_NUMBER")
+    private String panNumber;
+
     @Field(name = "GSTIN_TAXINFO")
     private String gstInTaxInformation;
 
     @Field(name = "PRODUCTS_BY_MERCHANT")
-    private List<Product> listOfProductsByMerchant;
-
-    @Field(name = "INVENTORY_CODE_ASSIGNED_TO_MERCHANT")
-    private String inventoryCode;
+    private List<MerchantProducts> listOfProductsByMerchant;
 
     @Field(name = "MERCHANT_EVENT_STATUS")
     private String eventStatus;

@@ -17,7 +17,7 @@ public class SequenceGeneratorService {
     //Generate UUID based on product ID
     public String generateProductUniqueID(String category) {
 
-        String uuid = UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "");
+        String uuid = UUID.randomUUID().toString();
         return category.substring(0,3)+uuid.substring(0, 10).toUpperCase();
     }
 

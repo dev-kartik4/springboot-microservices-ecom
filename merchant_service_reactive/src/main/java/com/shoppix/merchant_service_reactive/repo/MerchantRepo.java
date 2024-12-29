@@ -12,6 +12,6 @@ public interface MerchantRepo extends ReactiveMongoRepository<MerchantDetails,Lo
     @Query("{'emailId':  ?0}")
     Mono<MerchantDetails> findByEmailId(String emailId);
 
-    @Query("{'merchantSellerName':  ?0}")
-    Mono<MerchantDetails> findByMerchantSellerName(String merchantSellerName);
+    @Query("{'merchantSellingName':  ?0}")
+    Mono<MerchantDetails> findByMerchantSellerName(String merchantSellingName);
 }

@@ -53,7 +53,7 @@ public class InventoryKafkaConsumerService {
         } catch (Exception e) {
             LOGGER.error("Error processing inventory event", e);
             // Handle failure, send the message to the dead-letter topic
-            inventoryEvent.setInventoryMessageType(InventoryEnum.INVENTORY_INIT_FAILED.name());
+            inventoryEvent.setInventoryMessageType(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
             //String cartAsMessage = objectMapper.writeValueAsString(cartEvent);
             //cartKafkaProducerService.sendMessage("${spring.kafka.dead-letter.cart-dlt}", cartAsMessage);
         }

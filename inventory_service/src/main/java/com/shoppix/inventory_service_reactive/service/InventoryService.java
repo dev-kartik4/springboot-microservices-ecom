@@ -10,8 +10,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.inventory_service_reactive.enums.InventoryEnum;
+import com.shoppix.inventory_service_reactive.enums.MerchantProductEnum;
 import com.shoppix.inventory_service_reactive.events.InventoryEvent;
+import com.shoppix.inventory_service_reactive.events.MerchantProductEvent;
 import com.shoppix.inventory_service_reactive.exception.InventoryServiceException;
+import com.shoppix.inventory_service_reactive.pojo.MerchantProducts;
+import com.shoppix.inventory_service_reactive.pojo.ProductVariations;
+import com.shoppix.inventory_service_reactive.pojo.SKU;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +34,9 @@ public class InventoryService {
 	
 	@Autowired
 	public InventoryRepo invRepo;
+
+	@Value("${spring.kafka.topic.merchant-topic}")
+	private String merchantTopic;
 
 	@Value("${spring.kafka.topic.inventory-topic}")
 	private String inventoryTopic;
@@ -53,14 +61,13 @@ public class InventoryService {
 					.flatMap(existingInventory -> {
 						existingInventory.setInventoryId(inventory.getInventoryId());
 						existingInventory.setInventoryCode(inventory.getInventoryCode());
-						existingInventory.setSkuList(inventory.getSkuList());
-						existingInventory.setProductId(inventory.getProductId());
+						existingInventory.setParentProductId(inventory.getParentProductId());
 						existingInventory.setProductName(inventory.getProductName());
-						existingInventory.setProductBrand(inventory.getProductBrand());
-						existingInventory.setProductPrice(inventory.getProductPrice());
-						existingInventory.setModelNumber(inventory.getModelNumber());
-						existingInventory.setProductSerialNumber(inventory.getProductSerialNumber());
+						existingInventory.setMerchantId(inventory.getMerchantId());
+						existingInventory.setMerchantSellingName(inventory.getMerchantSellingName());
+						existingInventory.setProductVariants(inventory.getProductVariants());
 						existingInventory.setCategory(inventory.getCategory());
+						existingInventory.setSubCategory(inventory.getSubCategory());
 						existingInventory.setProductFulfillmentChannel(inventory.getProductFulfillmentChannel());
 						existingInventory.setAvailableQuantity(inventory.getAvailableQuantity());
 						existingInventory.setReservedQuantity(inventory.getReservedQuantity());
@@ -76,8 +83,7 @@ public class InventoryService {
 						existingInventory.setStockHistoryWithDate(inventory.getStockHistoryWithDate());
 						existingInventory.setProductSeller(inventory.getProductSeller());
 						existingInventory.setProductSupplier(inventory.getProductSupplier());
-						existingInventory.setStockAvailableLocation(inventory.getStockAvailableLocation());
-						existingInventory.setEventStatus(InventoryEnum.INVENTORY_UPDATED.name());
+						existingInventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_UPDATED.name());
 						existingInventory.setFirstCreatedAt(inventory.getFirstCreatedAt());
 						existingInventory.setLastUpdatedAt(generateLastUpdatedDateTime(new Date()));
 
@@ -88,7 +94,7 @@ public class InventoryService {
 									updateProductWhenInventoryUpdated(existingInventory);
 								})
 								.onErrorResume(e -> {
-									inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_FAILED.name());
+									inventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
 									inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
 									deleteByInventoryId(inventory.getInventoryId());
 									LOGGER.error("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e);
@@ -103,55 +109,80 @@ public class InventoryService {
 					.collectList()
 					.flatMap(existingInventory -> {
 						int totalInventorySize = existingInventory.size();
-						inventory.setInventoryId(totalInventorySize + 1);
-						inventory.setProductId(inventory.getProductId());
-						inventory.setSkuList(inventory.getSkuList());
-						inventory.setProductName(inventory.getProductName());
-						inventory.setProductBrand(inventory.getProductBrand());
-						inventory.setProductPrice(inventory.getProductPrice());
-						inventory.setModelNumber(inventory.getModelNumber());
-						inventory.setCategory(inventory.getCategory());
-						String pattern = "PROD-".concat(inventory.getCategory().substring(0, 3)).concat("-");
-						String productKey = generateUniqueID();
-						inventory.setProductSerialNumber(pattern.concat(productKey).concat("-#"+inventory.getProductId()));
-						inventory.setStockStatus(inventory.getStockStatus());
-						inventory.setProductFulfillmentChannel(inventory.getProductFulfillmentChannel());
-						inventory.setAvailableQuantity(10000);
-						inventory.setReservedQuantity(50);
-						inventory.setReorderLevel(100);
-						inventory.setReorderQuantity(5000);
-						inventory.setStockAlertLevel(200);
-						inventory.setStockStatus(inventory.getStockStatus());
-						inventory.setWarrantyStatus(inventory.getWarrantyStatus());
-						inventory.setStockType(inventory.getStockType());
-						inventory.setDamagedQuantity(inventory.getDamagedQuantity());
-						inventory.setReturnedQuantity(inventory.getReturnedQuantity());
-						inventory.setMinOrderQuantity(inventory.getMinOrderQuantity());
-						inventory.setStockHistoryWithDate(inventory.getStockHistoryWithDate());
-						inventory.setProductSeller(inventory.getProductSeller());
-						inventory.setProductSupplier(inventory.getProductSupplier());
-						inventory.setStockAvailableLocation(inventory.getStockAvailableLocation());
-						inventory.setInventoryCode(generateInventoryCode(inventory.getInventoryId(),inventory.getStockAvailableLocation()));
-						inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_SUCCESS.name());
-						inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-						inventory.setLastUpdatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+						Inventory newProductInventory = new Inventory();
+						newProductInventory.setInventoryId(totalInventorySize + 1);
+						newProductInventory.setProductName(inventory.getProductName());
+						newProductInventory.setParentProductId(inventory.getParentProductId());
+						newProductInventory.setMerchantId(inventory.getMerchantId());
+						newProductInventory.setMerchantSellingName(inventory.getMerchantSellingName());
+						newProductInventory.setProductVariants(inventory.getProductVariants());
+						newProductInventory.setCategory(inventory.getCategory());
+						newProductInventory.setSubCategory(inventory.getSubCategory());
+						newProductInventory.setStockStatus(inventory.getStockStatus());
+						newProductInventory.setProductFulfillmentChannel(inventory.getProductFulfillmentChannel());
+						newProductInventory.setAvailableQuantity(inventory.getProductVariants().stream().mapToInt(productVariant -> productVariant.getSkuData().getQuantityOfStock()).sum());
+						newProductInventory.setReservedQuantity(50);
+						newProductInventory.setReorderLevel(100);
+						newProductInventory.setReorderQuantity(5000);
+						newProductInventory.setStockAlertLevel(200);
+						newProductInventory.setStockStatus(inventory.getStockStatus());
+						newProductInventory.setWarrantyStatus(inventory.getWarrantyStatus());
+						newProductInventory.setStockType(inventory.getStockType());
+						newProductInventory.setDamagedQuantity(inventory.getDamagedQuantity());
+						newProductInventory.setReturnedQuantity(inventory.getReturnedQuantity());
+						newProductInventory.setMinOrderQuantity(inventory.getMinOrderQuantity());
+						newProductInventory.setStockHistoryWithDate(inventory.getStockHistoryWithDate());
+						newProductInventory.setProductSeller(inventory.getProductSeller());
+						newProductInventory.setProductSupplier(inventory.getProductSupplier());
+						newProductInventory.setInventoryCode(generateInventoryCode(newProductInventory.getInventoryId()));
+						newProductInventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_SUCCESS.name());
+						newProductInventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+						newProductInventory.setLastUpdatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
 
-						return invRepo.save(inventory).subscribeOn(Schedulers.parallel())
+						return invRepo.insert(newProductInventory).subscribeOn(Schedulers.parallel())
 								.doOnSuccess(savedInventory -> {
 									LOGGER.info("INVENTORY SAVED SUCCESSFULLY");
 									LOGGER.info("SENDING CONFIRMATION EVENT AS INVENTORY IS SAVED");
-									inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_SUCCESS.name());
-									inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+									updateMerchantSpecificData(newProductInventory);
+									newProductInventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_SUCCESS.name());
+									newProductInventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
 								}).doOnSuccess(savedInventory -> System.out.println("Saved Inventory: " + savedInventory))
 								.onErrorResume(e -> {
 									LOGGER.info("INVENTORY SAVING FAILED..");
-									inventory.setEventStatus(InventoryEnum.INVENTORY_INIT_FAILED.name());
-									inventory.setLastUpdatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-									deleteByInventoryId(inventory.getInventoryId());
+									newProductInventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
+									newProductInventory.setLastUpdatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
+									deleteByInventoryId(newProductInventory.getInventoryId());
 									LOGGER.error("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e);
 									return Mono.error(new InventoryServiceException("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e));
 								});
 					});
+		}
+	}
+
+		public void updateMerchantSpecificData(Inventory inventory) throws InventoryServiceException{
+
+		LOGGER.info("UPDATING PRODUCT DATA FOR MERCHANT");
+		try{
+
+			MerchantProducts merchantProducts = new MerchantProducts();
+			merchantProducts.setMerchantId(inventory.getMerchantId());
+			merchantProducts.setMerchantSellingName(inventory.getMerchantSellingName());
+			merchantProducts.setParentProductId(inventory.getParentProductId());
+			merchantProducts.setProductName(inventory.getProductName());
+			merchantProducts.setInventoryId(inventory.getInventoryId());
+			merchantProducts.setInventoryCode(inventory.getInventoryCode());
+
+
+			MerchantProductEvent merchantProductEvent = new MerchantProductEvent();
+			merchantProductEvent.setMerchantId(inventory.getMerchantId());
+			merchantProductEvent.setMerchantMessageType(MerchantProductEnum.MERCHANT_PRODUCT_UPDATE.name());
+			merchantProductEvent.setMerchantProducts(merchantProducts);
+
+			String merchantAsMessage = objectMapper.writeValueAsString(merchantProductEvent);
+			inventoryKafkaProducerService.sendMessage(merchantTopic, merchantAsMessage);
+			LOGGER.info("MERCHANT DETAILS UPDATED");
+		} catch (Exception e){
+			LOGGER.error("ERROR DURING UPDATING DATA FOR MERCHANT");
 		}
 	}
 
@@ -161,7 +192,7 @@ public class InventoryService {
 			LOGGER.info("UPDATING PRODUCT THROUGH INVENTORY EVENT");
 			InventoryEvent inventoryEvent = new InventoryEvent();
 			inventoryEvent.setInventoryId(existingInventory.getInventoryId());
-			inventoryEvent.setProductId(existingInventory.getParentProductId());
+			inventoryEvent.setParentProductId(existingInventory.getParentProductId());
 			inventoryEvent.setInventoryMessageType(existingInventory.getEventStatus());
 			inventoryEvent.setInventory(existingInventory);
 
@@ -173,7 +204,7 @@ public class InventoryService {
         }
     }
 
-	public Mono<Inventory> getInventoryById(int inventoryId) throws InventoryServiceException{
+	public Mono<Inventory> getInventoryById(long inventoryId) throws InventoryServiceException{
 
 		Mono<Inventory> inventory = invRepo.findById(inventoryId);
 
@@ -184,12 +215,12 @@ public class InventoryService {
 	}
 
 
-	public Mono<Inventory> getInvByProductId(long productId) {
+	public Mono<Inventory> getInvByProductId(String parentProductId) {
 		return invRepo.findAll()
-				.filter(inventory -> inventory.getProductId() == productId)
+				.filter(inventory -> inventory.getParentProductId() == parentProductId)
 				.next()
 				.switchIfEmpty(Mono.error(() -> {
-					String errorMsg = "ERROR WHILE FETCHING INVENTORY DETAILS HAVING PRODUCT ID [" + productId + "]";
+					String errorMsg = "ERROR WHILE FETCHING INVENTORY DETAILS HAVING PRODUCT ID [" + parentProductId + "]";
 					LOGGER.error(errorMsg);
 					return new InventoryServiceException(errorMsg);
 				}))
@@ -209,7 +240,7 @@ public class InventoryService {
 	}
 
 
-	public AtomicBoolean deleteByInventoryId(int inventoryId) {
+	public AtomicBoolean deleteByInventoryId(long inventoryId) {
 
 		LOGGER.info("DELETING... INVENTORY DETAILS WITH INVENTORY ID ["+inventoryId+"]");
 		AtomicBoolean stockDetailsDeleted = new AtomicBoolean(false);
@@ -241,9 +272,13 @@ public class InventoryService {
 		return UUID.randomUUID().toString().substring(0, 10).toUpperCase();
 	}
 
-	private String generateInventoryCode(int inventoryId,String stockAvailableLocation){
+	private String generateInventoryCode(long inventoryId) {
 
-		return "INV-"+stockAvailableLocation+"-"+inventoryId;
+		UUID uuid = UUID.randomUUID();
+
+		// Convert UUID to string and take the first 5 characters
+		String shortUuid = "INV-"+uuid.toString().substring(0, 5)+"-"+inventoryId;
+		return shortUuid;
 	}
 
 }

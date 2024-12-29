@@ -1,6 +1,5 @@
 package com.shoppix.product_reactive_service.repo;
 
-import com.shoppix.product_reactive_service.entity.MerchantDetails;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.stereotype.Repository;
@@ -11,9 +10,9 @@ import reactor.core.publisher.Mono;
 @Repository
 public interface ProductRepo extends ReactiveMongoRepository<Product, String> {
 
-    @Query("{productName: ?0}")
-    Mono<Product> findProductByProductName(String productName);
+    @Query("{'parentProductId': ?0}")
+    Mono<Product> findByParentProductId(String parentProductId);
 
-    @Query("{merchantId: ?0, parentProductId: ?0}")
-    Mono<MerchantDetails> findMerchantDetailsByParentProductId(String merchantId, String parentProductId);
+    @Query("{'productName': ?0}")
+    Mono<Product> findProductByProductName(String productName);
 }

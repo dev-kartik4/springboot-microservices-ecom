@@ -55,6 +55,7 @@ spring:
               packages: "*"
       topics:
         - product-topic
+        - product-topic-dlt
         - product-notification-topic
         - inventory-topic
         - offers-topic

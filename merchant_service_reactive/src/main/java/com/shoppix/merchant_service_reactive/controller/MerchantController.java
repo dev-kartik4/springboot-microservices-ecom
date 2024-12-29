@@ -40,4 +40,13 @@ public class MerchantController {
         return new ResponseEntity<>(merchantDetails, HttpStatus.OK);
     }
 
+//    @PutMapping("/{merchantId}/addNewProductListing")
+//    @ResponseBody
+//    public ResponseEntity<Mono<MerchantDetails>> addNewProductListing(@PathVariable("merchantId") long merchantId,@RequestBody Product newProduct) {
+//
+//        Mono<MerchantDetails> updatedMerchantDetails = merchantService.addOrUpdateProductForMerchant(merchantId,newProduct);
+//
+//        return new ResponseEntity<>(updatedMerchantDetails, HttpStatus.OK);
+//    }
+
 }
