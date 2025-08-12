@@ -1,6 +1,8 @@
 package com.shoppix.merchant_service_reactive.controller;
 
 import com.shoppix.merchant_service_reactive.entity.MerchantDetails;
+import com.shoppix.merchant_service_reactive.entity.MerchantProduct;
+import com.shoppix.merchant_service_reactive.pojo.ResponseMessage;
 import com.shoppix.merchant_service_reactive.service.MerchantService;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
@@ -22,9 +24,9 @@ public class MerchantController {
 
     private final Logger LOGGER = LoggerFactory.getLogger(MerchantController.class);
 
-    @PostMapping("/registerNewMerchant")
+    @PostMapping("/registerOrUpdateMerchant")
     @ResponseBody
-    public ResponseEntity<Mono<MerchantDetails>> registerNewMerchant(@RequestBody MerchantDetails merchantDetails) {
+    public ResponseEntity<Mono<MerchantDetails>> registerOrUpdateMerchant(@RequestBody MerchantDetails merchantDetails) {
 
         LOGGER.info("Registering new merchant {}", merchantDetails);
         Mono<MerchantDetails> newMerchantDetails = merchantService.createOrUpdateMerchantDetails(merchantDetails);
@@ -40,13 +42,27 @@ public class MerchantController {
         return new ResponseEntity<>(merchantDetails, HttpStatus.OK);
     }
 
-//    @PutMapping("/{merchantId}/addNewProductListing")
-//    @ResponseBody
-//    public ResponseEntity<Mono<MerchantDetails>> addNewProductListing(@PathVariable("merchantId") long merchantId,@RequestBody Product newProduct) {
-//
-//        Mono<MerchantDetails> updatedMerchantDetails = merchantService.addOrUpdateProductForMerchant(merchantId,newProduct);
-//
-//        return new ResponseEntity<>(updatedMerchantDetails, HttpStatus.OK);
-//    }
+    @DeleteMapping("/deleteMerchantAccount/{merchantId}")
+    public Mono<ResponseEntity<ResponseMessage>> deleteMerchantAccount(@PathVariable("merchantId") long merchantId) {
 
+        return merchantService.deleteByMerchantId(merchantId)
+                .flatMap(deleted -> {
+                    if(deleted) {
+                        ResponseMessage responseMessage = new ResponseMessage();
+                        responseMessage.setStatusCode(200);
+                        responseMessage.setMessage("MERCHANT DELETED WITH ID [" + merchantId + "]");
+                        return Mono.just(ResponseEntity.ok(responseMessage));
+                    } else{
+                        ResponseMessage responseMessage = new ResponseMessage();
+                        responseMessage.setStatusCode(404);
+                        responseMessage.setMessage("NO MERCHANT FOUND WITH ID [" + merchantId + "]");
+                        return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseMessage));
+                    }
+                })
+                .onErrorResume(e -> {
+                    LOGGER.error("Error deleting merchant with ID [{}]", merchantId, e);
+                    ResponseMessage responseMessage = new ResponseMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ERROR DELETING MERCHANT WITH ID [" + merchantId + "]");
+                    return Mono.just(ResponseEntity.internalServerError().body(responseMessage));
+                });
+    }
 }

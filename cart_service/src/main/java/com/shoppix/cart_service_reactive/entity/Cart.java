@@ -22,8 +22,8 @@ public class Cart {
 	@Field(name = "PRODUCTS_IN_CART")
 	public List<CartProduct> cartProducts;
 
-	@Field(name = "TOTAL_PRICE")
-	public int totalPrice;
+	@Field(name = "TOTAL_CART_PRICE")
+	public double totalPrice;
 
 	@Field(name = "CART_EVENT_STATUS")
 	public String eventStatus;

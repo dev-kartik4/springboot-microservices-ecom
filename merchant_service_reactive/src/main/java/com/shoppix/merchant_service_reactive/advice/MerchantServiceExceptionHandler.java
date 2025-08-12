@@ -1,7 +1,7 @@
 package com.shoppix.merchant_service_reactive.advice;
 
 import com.shoppix.merchant_service_reactive.exception.MerchantServiceException;
-import com.shoppix.merchant_service_reactive.pojo.ResponseErrorMessage;
+import com.shoppix.merchant_service_reactive.pojo.ResponseMessage;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,9 +13,9 @@ public class MerchantServiceExceptionHandler {
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(MerchantServiceException.class)
-    public ResponseEntity<ResponseErrorMessage> handleMerchantServiceException(MerchantServiceException merchantEx){
+    public ResponseEntity<ResponseMessage> handleMerchantServiceException(MerchantServiceException merchantEx){
 
-        ResponseErrorMessage responseErrorMessage = new ResponseErrorMessage();
+        ResponseMessage responseErrorMessage = new ResponseMessage();
         responseErrorMessage.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         responseErrorMessage.setMessage(merchantEx.getMessage());
         merchantEx.printStackTrace();

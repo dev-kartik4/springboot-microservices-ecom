@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.inventory_service_reactive.entity.Inventory;
 import com.shoppix.inventory_service_reactive.enums.InventoryEnum;
+import com.shoppix.inventory_service_reactive.enums.MerchantEnum;
 import com.shoppix.inventory_service_reactive.enums.ProductEnum;
 import com.shoppix.inventory_service_reactive.events.InventoryEvent;
+import com.shoppix.inventory_service_reactive.events.MerchantProductEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,25 @@ public class InventoryKafkaConsumerService {
             inventoryEvent.setInventoryMessageType(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
             //String cartAsMessage = objectMapper.writeValueAsString(cartEvent);
             //cartKafkaProducerService.sendMessage("${spring.kafka.dead-letter.cart-dlt}", cartAsMessage);
+        }
+    }
+
+    @Retryable(
+            value = { Exception.class },
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, maxDelay = 3000)
+    )
+    @KafkaListener(topics = "${spring.kafka.topic.merchant-topic}", groupId = "${spring.kafka.consumer.group-id}")
+    public void consumeMessageFromMerchant(String topic, String message) throws JsonProcessingException {
+        LOGGER.info("Received Message: {}", message);
+        MerchantProductEvent merchantProductEvent = objectMapper.readValue(message, MerchantProductEvent.class);
+        try{
+            LOGGER.info("Received from Merchant Topic To Inventory {}, Message {}", topic,message);
+            if(merchantProductEvent.getMerchantMessageType().equals(MerchantEnum.MERCHANT_DELETED.name())){
+                inventoryService.deleteInventoryConnectedToMerchant(merchantProductEvent.getMerchantId());
+            }
+        } catch(Exception e){
+            LOGGER.error("INVENTORY: ERROR DURING CONSUMING MESSAGES FROM MERCHANT MICROSERVICE");
         }
     }
 

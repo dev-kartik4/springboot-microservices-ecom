@@ -1,6 +1,6 @@
 package com.shoppix.product_reactive_service.events;
 
-import com.shoppix.product_reactive_service.pojo.MerchantProducts;
+import com.shoppix.product_reactive_service.pojo.MerchantProduct;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,5 +14,5 @@ public class MerchantProductEvent {
 
     private String merchantMessageType;
 
-    private MerchantProducts merchantProducts;
+    private MerchantProduct merchantProduct;
 }

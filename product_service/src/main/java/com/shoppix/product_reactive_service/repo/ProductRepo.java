@@ -15,4 +15,7 @@ public interface ProductRepo extends ReactiveMongoRepository<Product, String> {
 
     @Query("{'productName': ?0}")
     Mono<Product> findProductByProductName(String productName);
+
+    @Query("{'parentProductId': ?0}")
+    Mono<Void> deleteByParentProductId(String parentProductId);
 }

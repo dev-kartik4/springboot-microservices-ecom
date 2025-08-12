@@ -1,14 +1,13 @@
-package com.shoppix.inventory_service_reactive.pojo;
+package com.shoppix.product_reactive_service.pojo;
 
 import lombok.*;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 @Data
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantProducts {
+public class MerchantProduct {
 
     private long merchantId;
 

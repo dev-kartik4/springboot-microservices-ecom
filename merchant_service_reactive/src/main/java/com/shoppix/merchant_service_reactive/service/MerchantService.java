@@ -2,10 +2,11 @@ package com.shoppix.merchant_service_reactive.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shoppix.merchant_service_reactive.entity.MerchantProducts;
+import com.shoppix.merchant_service_reactive.entity.MerchantProduct;
 import com.shoppix.merchant_service_reactive.enums.MerchantEnum;
 import com.shoppix.merchant_service_reactive.entity.MerchantDetails;
 import com.shoppix.merchant_service_reactive.enums.MerchantProductEnum;
+import com.shoppix.merchant_service_reactive.events.MerchantEvent;
 import com.shoppix.merchant_service_reactive.events.MerchantProductEvent;
 import com.shoppix.merchant_service_reactive.exception.MerchantServiceException;
 import com.shoppix.merchant_service_reactive.repo.MerchantRepo;
@@ -22,6 +23,7 @@ import reactor.core.scheduler.Schedulers;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 @Service
@@ -40,7 +42,7 @@ public class MerchantService {
     public WebClient.Builder webClientBuilder;
 
     @Value("${spring.kafka.topic.merchant-topic}")
-    private String productTopicName;
+    private String merchantTopic;
 
     private final ObjectMapper objectMapper;
 
@@ -128,29 +130,15 @@ public class MerchantService {
                 });
     }
 
-    private MerchantProducts populateMerchantProductData(long merchantId,MerchantProducts existingMerchantProducts) {
+    private MerchantProduct populateMerchantProductData(long merchantId, MerchantProduct existingMerchantProduct) {
 
-        MerchantProducts merchantProduct = new MerchantProducts();
+        MerchantProduct merchantProduct = new MerchantProduct();
         merchantProduct.setMerchantId(merchantId);
-        merchantProduct.setMerchantSellingName(existingMerchantProducts.getMerchantSellingName());
-        merchantProduct.setParentProductId(existingMerchantProducts.getParentProductId());
-        merchantProduct.setProductName(existingMerchantProducts.getProductName());
-        merchantProduct.setInventoryId(existingMerchantProducts.getInventoryId());
-        merchantProduct.setInventoryCode(existingMerchantProducts.getInventoryCode());
-
-        // Populate ProductVariations
-//        List<MerchantProducts> populatedProductVariations = product.getProductVariations().stream()
-//                .map(this::populateProductVariationData)
-//                .collect(Collectors.toList());
-//        merchantProduct.setProductVariations(populatedProductVariations);
-//
-//        // Populate other fields
-//        merchantProduct.setCategory(product.getCategory());
-//        merchantProduct.setSubCategory(product.getSubCategory());
-//        merchantProduct.setProductFulfillmentChannel(product.getProductFulfillmentChannel());
-//        merchantProduct.setProductManufacturer(product.getProductManufacturer());
-//        merchantProduct.setProductSeller(product.getProductSeller());
-//        merchantProduct.setAvailablePincodesForProduct(product.getAvailablePincodesForProduct());
+        merchantProduct.setMerchantSellingName(existingMerchantProduct.getMerchantSellingName());
+        merchantProduct.setParentProductId(existingMerchantProduct.getParentProductId());
+        merchantProduct.setProductName(existingMerchantProduct.getProductName());
+        merchantProduct.setInventoryId(existingMerchantProduct.getInventoryId());
+        merchantProduct.setInventoryCode(existingMerchantProduct.getInventoryCode());
 
         return merchantProduct;
     }
@@ -160,15 +148,6 @@ public class MerchantService {
         LOGGER.info("FETCHING MERCHANT DETAILS WITH MERCHANT ID ["+merchantId+"]...");
 
         Mono<MerchantDetails> merchantDetails = merchantRepo.findById(merchantId);
-
-        return merchantDetails.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.empty());
-    }
-
-    public Mono<MerchantDetails> getMerchantByEmailAddress(String emailAddress) throws MerchantServiceException{
-
-        LOGGER.info("FETCHING MERCHANT DETAILS WITH MERCHANT EMAIL ADDRESS ["+emailAddress+"]...");
-
-        Mono<MerchantDetails> merchantDetails = merchantRepo.findByEmailId(emailAddress);
 
         return merchantDetails.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.empty());
     }
@@ -183,36 +162,47 @@ public class MerchantService {
     }
 
 
-
     public Mono<Boolean> deleteByMerchantId(long merchantId) {
 
         LOGGER.info("IN PROCESS OF DELETING MERCHANT WITH MERCHANT ID [" + merchantId + "]");
 
-        return merchantRepo.deleteById(merchantId)
-                .then(Mono.just(true))
-                .onErrorResume(e -> {
-                    LOGGER.error("Error during merchant deletion process", e);
-                    return Mono.just(false);
-                });
+        return merchantRepo.findById(merchantId).hasElement().doOnSuccess(merchId -> {
+            LOGGER.info("MERCHANT DELETED SUCCESSFULLY [" + merchantId + "]");
+            deleteEntireProductAndInventoryConnectedWithMerchant(merchantId).subscribe();
+            merchantRepo.deleteById(merchantId).subscribe();
+        }).switchIfEmpty(Mono.defer(() -> {
+            LOGGER.info("NO MERCHANT FOUND WITH ID [" + merchantId + "]");
+            return Mono.just(false);
+        }));
     }
 
-    private void sendEventToProduct(MerchantDetails merchantDetails) throws JsonProcessingException {
+    private Mono<Void> deleteEntireProductAndInventoryConnectedWithMerchant(long merchantId) {
 
-        try{
-            LOGGER.info("CREATING NEW PRODUCT BY MERCHANT...");
-            MerchantProductEvent merchantProductEvent = new MerchantProductEvent();
-            merchantProductEvent.setMerchantId(merchantDetails.getMerchantId());
-            merchantProductEvent.setMerchantMessageType(MerchantProductEnum.MERCHANT_PRODUCT_CREATE.name());
-            //merchantProductEvent.setMerchantProducts(merchantDetails.getListOfProductsByMerchant());
+        LOGGER.info("DELETING ENTIRE PRODUCT AND INVENTORY CONNECTED WITH MERCHANT ID...["+merchantId+"]");
 
-            String merchantProductAsMessage = objectMapper.writeValueAsString(merchantProductEvent);
-            merchantKafkaProducerService.sendMessage(productTopicName,merchantProductAsMessage);
-            LOGGER.info("PRODUCT CREATED BY MERCHANT. WILL BE DISPLAYED SHORTLY");
-        } catch (Exception e) {
-            LOGGER.error("ERROR DURING PROCESS OF CREATING NEW PRODUCT BY MERCHANT", e);
-            throw new RuntimeException(e);
-        }
+        return getMerchantById(merchantId).flatMap(merchData -> {
+            MerchantEvent merchantEvent = new MerchantEvent();
+            merchantEvent.setMerchantId(merchantId);
+            merchantEvent.setMerchantMessageType(MerchantEnum.MERCHANT_DELETED.name());
+            merchantEvent.setMerchantDetails(merchData);
 
+            LOGGER.info("MERCHANT EVENT: {}", merchantEvent);
+            String merchantAsMessage;
+            try{
+                merchantAsMessage = objectMapper.writeValueAsString(merchantEvent);
+            } catch (JsonProcessingException e) {
+                LOGGER.error("Error serializing merchant event: ", e);
+                return Mono.error(new RuntimeException("Error serializing merchant event", e));
+            }
+            return Mono.fromRunnable(() -> {
+                merchantKafkaProducerService.sendMessage(merchantTopic,merchantAsMessage);
+                LOGGER.info("PRODUCT AND INVENTORY DELETED BY MERCHANT AND WILL GET DE-SCOPED SHORTLY");
+                LOGGER.info("MERCHANT DELETED SUCCESSFULLY [" + merchantId + "]");
+            }).then();
+        }).switchIfEmpty(Mono.defer(() -> {
+            LOGGER.warn("Merchant with ID {} not found", merchantId);
+            return Mono.empty(); // Return Mono.empty() if merchant not found
+        }));
     }
 
     private String generateLastUpdatedDateTime(Date date) {

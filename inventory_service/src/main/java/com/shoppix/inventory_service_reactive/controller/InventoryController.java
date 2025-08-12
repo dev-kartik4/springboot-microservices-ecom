@@ -95,10 +95,10 @@ public class InventoryController {
 	@RateLimiter(name = INVENTORY_SERVICE,fallbackMethod = "inventoryFallback")
 	public ResponseEntity<Mono<Boolean>> deleteById(@PathVariable("inventoryId") int inventoryId) {
 
-		AtomicBoolean productDeleted = inventoryService.deleteByInventoryId(inventoryId);
+		Mono<Boolean> inventoryDeleted = inventoryService.deleteByInventoryId(inventoryId);
 
-		if(productDeleted.equals(true)){
-			LOGGER.info("INVENTORY ID "+inventoryId+" SUCCESSFULLY DELETED");
+		if(inventoryDeleted.equals(true)){
+			LOGGER.info("INVENTORY ID ["+inventoryId+"] SUCCESSFULLY DELETED");
 			return new ResponseEntity("INVENTORY ID ["+inventoryId+"] SUCCESSFULLY DELETED",HttpStatus.FORBIDDEN);
 		}else{
 			LOGGER.error("ERROR DELETING INVENTORY WITH INVENTORY ID ["+inventoryId+"] | NOT FOUND");

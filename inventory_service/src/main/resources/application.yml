@@ -40,6 +40,7 @@ spring:
             trusted:
               packages: "*"
       topics:
+        - merchant-topic
         - product-notification-topic
         - inventory-topic
         - payment-topic

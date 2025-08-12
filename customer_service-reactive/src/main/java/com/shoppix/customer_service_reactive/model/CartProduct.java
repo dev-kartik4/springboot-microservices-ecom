@@ -11,7 +11,7 @@ import java.util.Map;
 @NoArgsConstructor
 public class CartProduct {
 
-    private int productId;
+    private String productId;
 
     private String productName;
 

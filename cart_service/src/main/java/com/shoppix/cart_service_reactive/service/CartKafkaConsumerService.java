@@ -3,12 +3,15 @@ package com.shoppix.cart_service_reactive.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.cart_service_reactive.enums.CartEnum;
+import com.shoppix.cart_service_reactive.enums.CartProductEnum;
 import com.shoppix.cart_service_reactive.events.CartEvent;
 import com.shoppix.cart_service_reactive.enums.CustomerEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.annotation.RetryableTopic;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -34,7 +37,7 @@ public class CartKafkaConsumerService {
         this.cartKafkaProducerService = cartKafkaProducerService;
     }
 
-    @Retryable(
+    @RetryableTopic(
             value = { Exception.class },
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, maxDelay = 3000)
@@ -44,7 +47,6 @@ public class CartKafkaConsumerService {
         CartEvent cartEvent = objectMapper.readValue(message, CartEvent.class);
         LOGGER.info("Received Message: {}", message);
         try {
-
 
             if (cartEvent.getCartMessageType().equals(CustomerEnum.CUSTOMER_REGISTERED.name())) {
                 // Call createOrUpdateCart in a non-blocking way, using subscribe to trigger the database update
@@ -58,6 +60,8 @@ public class CartKafkaConsumerService {
                         .doOnTerminate(() -> LOGGER.info("Cart deletion process completed for customer ID [{}]", cartEvent.getCustomerIdForCart()))
                         .doOnError(error -> LOGGER.error("Error during cart deletion for customer ID [{}]", cartEvent.getCustomerIdForCart(), error))
                         .subscribe(); // Trigger the operation by subscribing
+            } else if(cartEvent.getCartMessageType().equals(CartProductEnum.ADD_CART_PRODUCT.name())){
+                cartService.addProductToCart(cartEvent.getCustomerIdForCart(),cart)
             }
 
 
@@ -70,9 +74,9 @@ public class CartKafkaConsumerService {
         }
     }
 
-//    @DltHandler
-//    @KafkaListener(topics = "${spring.kafka.dead-letter.cart-dlt}", groupId = "${spring.kafka.consumer.group-id}")
-//    public void listenDLT(String topic,String message) {
-//        LOGGER.info("Event on dlt topic={}, message={}", topic,message);
-//    }
+    @DltHandler
+    @KafkaListener(topics = "${spring.kafka.dead-letter.cart-dlt}", groupId = "${spring.kafka.consumer.group-id}")
+    public void listenDLT(String topic,String message) {
+        LOGGER.info("Event on dlt topic={}, message={}", topic,message);
+    }
 }

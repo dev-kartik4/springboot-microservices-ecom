@@ -1,4 +1,4 @@
-package com.shoppix.product_reactive_service.pojo;
+package com.shoppix.inventory_service_reactive.pojo;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantProducts {
+public class MerchantProduct {
 
     private long merchantId;
 

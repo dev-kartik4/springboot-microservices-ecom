@@ -14,7 +14,7 @@ public class Cart {
 
     public List<CartProduct> cartProducts;
 
-    public int totalPrice;
+    public double totalPrice;
 
     public String eventStatus;
 

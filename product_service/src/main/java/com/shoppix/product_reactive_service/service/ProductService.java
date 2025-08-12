@@ -9,13 +9,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.product_reactive_service.entity.*;
 import com.shoppix.product_reactive_service.enums.InventoryEnum;
-import com.shoppix.product_reactive_service.enums.MerchantProductEnum;
 import com.shoppix.product_reactive_service.enums.ProductEnum;
 import com.shoppix.product_reactive_service.events.InventoryEvent;
 import com.shoppix.product_reactive_service.events.MerchantProductEvent;
 import com.shoppix.product_reactive_service.exception.ProductServiceException;
 import com.shoppix.product_reactive_service.pojo.Inventory;
-import com.shoppix.product_reactive_service.pojo.MerchantProducts;
 import com.shoppix.product_reactive_service.utility.ProductIdGenerator;
 import org.apache.kafka.common.utils.Utils;
 import org.slf4j.Logger;
@@ -161,7 +159,7 @@ public class ProductService{
 				.onErrorResume(e -> {
 					inventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
 					inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-					deleteProductById(newProduct.getParentProductId());
+					deleteByParentProductId(newProduct.getParentProductId());
 					LOGGER.error("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e);
 					return Mono.error(new ProductServiceException("OOPS TECHNICAL ERROR! NEW PRODUCT ADDING PROCESS FAILED", e));
 				});
@@ -246,28 +244,21 @@ public class ProductService{
 
 	/**
 	 *
-	 * @param productId
+	 * @param parentProductId
 	 * @return
 	 * @throws ProductServiceException
 	 */
-	public AtomicBoolean deleteProductById(String productId) throws ProductServiceException {
+	public Mono<Boolean> deleteByParentProductId(String parentProductId) throws ProductServiceException {
 
-		LOGGER.info("DELETING... PRODUCT DETAILS WITH PRODUCT ID ["+productId+"]");
-		AtomicBoolean productDeleted = new AtomicBoolean(false);
-		Mono<Product> productExists = getProductById(productId);
-		productExists.publishOn(Schedulers.parallel()).filter(product -> {
-			if((product != null)){
-				productRepo.deleteById(productId).subscribe();
-				productDeleted.set(true);
-				LOGGER.info("PRODUCT AND INVENTORY DETAILS DELETED WITH PRODUCT ID ["+productId+"]");
-			}
-			return true;
-		}).switchIfEmpty(Mono.error(() -> {
-			LOGGER.error("ERROR WHILE DELETING PRODUCT WITH PRODUCT ID ["+productId+"] | NOT FOUND");
-			throw new ProductServiceException("ERROR WHILE DELETING PRODUCT WITH PRODUCT ID ["+productId+"] | NOT FOUND");
-		})).doOnNext(System.out::println).delaySubscription(Duration.ofMillis(3000));
+		LOGGER.info("DELETING... PARENT PRODUCT WITH ID ["+parentProductId+"]");
 
-		return productDeleted;
+		return productRepo.findById(parentProductId).hasElement().doOnSuccess(prodId -> {
+			LOGGER.info("PRODUCT DELETED SUCCESSFULLY [" + parentProductId + "]");
+			productRepo.deleteById(parentProductId).subscribe();
+		}).switchIfEmpty(Mono.defer(() -> {
+			LOGGER.info("NO PRODUCT FOUND WITH ID [" + parentProductId + "]");
+			return Mono.just(false);
+		}));
 	}
 
 	public void createOrUpdateInventoryForProduct(String productId,Inventory newInventory) throws ProductServiceException{
@@ -283,7 +274,7 @@ public class ProductService{
 			productKafkaProducerService.sendMessage(inventoryTopic, inventoryAsMessage);
 			LOGGER.info("PRODUCT CREATED AND INVENTORY DETAILS UPDATED");
 		} catch (Exception e){
-			deleteProductById(productId);
+			deleteByParentProductId(productId).subscribe();
 			LOGGER.error("ERROR DURING PROCESS OF ADDING NEW STOCK TO PRODUCT");
 		}
 	}
@@ -327,6 +318,19 @@ public class ProductService{
 			throw new ProductServiceException("ERROR FETCHING PRODUCT DETAILS BY INVENTORY ID ["+inventoryId+"]");
 		})).delaySubscription(Duration.ofMillis(3000));
 	}
+
+	public void deleteProductsConnectedWithMerchantId(long merchantId) throws ProductServiceException{
+
+		try{
+			getAllProducts().toStream().filter(product -> product.getMerchantId() == merchantId).forEach(product -> {
+				deleteByParentProductId(product.getParentProductId()).subscribe();
+				LOGGER.info("PARENT PRODUCT ID ["+product.getParentProductId()+"] DELETED");
+			});
+		} catch (Exception e) {
+			LOGGER.error("ERROR DURING DELETING PRODUCTS CONNECTED TO MERCHANT ID ["+merchantId+"]");
+            throw new ProductServiceException("ERROR DURING DELETING PRODUCTS CONNECTED TO MERCHANT ID ["+merchantId+"]");
+        }
+    }
 //
 //	public Mono<Inventory> increaseProductQuantity(int productId,Inventory inv) throws ProductServiceException{
 //

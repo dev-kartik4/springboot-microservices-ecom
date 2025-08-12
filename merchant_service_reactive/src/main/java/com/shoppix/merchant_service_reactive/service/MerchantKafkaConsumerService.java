@@ -48,17 +48,10 @@ public class MerchantKafkaConsumerService {
         try{
             LOGGER.info("Received from Merchant Topic {}, Message {}", topic,message);
             if(merchantProductEvent.getMerchantMessageType().equals(MerchantProductEnum.MERCHANT_PRODUCT_UPDATE.name())){
-                //merchan.updateProductWhenInventoryUpdated(inventoryEvent.getInventory());
-//                merchantRepo.findByMerchantSellerName(merchantProductEvent.getMerchantProducts().getMerchantSellingName())
-//                        .map(merchantDetails -> {
-//                            merchantDetails.getListOfProductsByMerchant().add(merchantProductEvent.getMerchantProducts());
-//
-//                            return merchantDetails;
-//                });
                 Mono<MerchantDetails> merchantData = merchantService.getMerchantById(merchantProductEvent.getMerchantId());
 
                 merchantData.subscribe(merchant -> {
-                    merchant.getListOfProductsByMerchant().add(merchantProductEvent.getMerchantProducts());
+                    merchant.getListOfProductsByMerchant().add(merchantProductEvent.getMerchantProduct());
                     merchantService.createOrUpdateMerchantDetails(merchant).subscribe();
                 });
             }

@@ -20,6 +20,7 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
+      merchant-topic: merchant-topic
       product-topic: product-topic
       product-notification-topic: product-notification-topic
       inventory-topic: inventory-topic
@@ -54,6 +55,7 @@ spring:
             trusted:
               packages: "*"
       topics:
+        - merchant-topic
         - product-topic
         - product-topic-dlt
         - product-notification-topic

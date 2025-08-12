@@ -1,6 +1,6 @@
 package com.shoppix.merchant_service_reactive.events;
 
-import com.shoppix.merchant_service_reactive.entity.MerchantProduct;
+import com.shoppix.merchant_service_reactive.entity.MerchantDetails;
 import lombok.*;
 
 @Data
@@ -8,12 +8,11 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class MerchantProductEvent {
+public class MerchantEvent {
 
     private long merchantId;
 
     private String merchantMessageType;
 
-    private MerchantProduct merchantProduct;
+    private MerchantDetails merchantDetails;
 }
-

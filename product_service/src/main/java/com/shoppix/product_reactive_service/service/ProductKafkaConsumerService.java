@@ -3,8 +3,10 @@ package com.shoppix.product_reactive_service.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.product_reactive_service.enums.InventoryEnum;
+import com.shoppix.product_reactive_service.enums.MerchantEnum;
 import com.shoppix.product_reactive_service.events.InventoryEvent;
 import com.shoppix.product_reactive_service.enums.MerchantProductEnum;
+import com.shoppix.product_reactive_service.events.MerchantProductEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,25 +50,24 @@ public class ProductKafkaConsumerService {
         }
     }
 
-//    @Retryable(
-//            value = { Exception.class },
-//            maxAttempts = 5,
-//            backoff = @Backoff(delay = 1000, maxDelay = 3000)
-//    )
-//    @KafkaListener(topics = "${spring.kafka.topic.product-topic}", groupId = "${spring.kafka.consumer.group-id}")
-//    public void consumeMessageFromMerchant(String topic, String message) throws JsonProcessingException {
-//        LOGGER.info("Received Message: {}", message);
-//        ProductEvent productEvent = objectMapper.readValue(message, ProductEvent.class);
-//        try{
-//            LOGGER.info("Received from Product Topic from Merchant {}, Message {}", topic,message);
-//            if(productEvent.getMerchantMessageType().equals(MerchantProductEnum.MERCHANT_CREATE_PRODUCT.name())){
-//                productService.createOrUpdateProduct(productEvent.getProduct()).subscribe();
-//            }
-//        } catch(Exception e){
-//            //productKafkaProducerService.sendMessage("${spring.kafka.topic.product-topic-dlt}", String.valueOf(productEvent));
-//            LOGGER.error("ERROR DURING CONSUMING MESSAGES FROM MERCHANT MICROSERVICE");
-//        }
-//    }
+    @Retryable(
+            value = { Exception.class },
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 1000, maxDelay = 3000)
+    )
+    @KafkaListener(topics = "${spring.kafka.topic.merchant-topic}", groupId = "${spring.kafka.consumer.group-id}")
+    public void consumeMessageFromMerchant(String topic, String message) throws JsonProcessingException {
+        LOGGER.info("Received Message: {}", message);
+        MerchantProductEvent merchantProductEvent = objectMapper.readValue(message, MerchantProductEvent.class);
+        try{
+            LOGGER.info("Received from Merchant Topic to Product {}, Message {}", topic,message);
+            if(merchantProductEvent.getMerchantMessageType().equals(MerchantEnum.MERCHANT_DELETED.name())){
+                productService.deleteProductsConnectedWithMerchantId(merchantProductEvent.getMerchantId());
+            }
+        } catch(Exception e){
+            LOGGER.error("PRODUCT: ERROR DURING CONSUMING MESSAGES FROM MERCHANT MICROSERVICE");
+        }
+    }
 
 //    @DltHandler
 //    @KafkaListener(topics = "${spring.kafka.dead-letter.product-topic-dlt}", groupId = "${spring.kafka.consumer.group-id}")

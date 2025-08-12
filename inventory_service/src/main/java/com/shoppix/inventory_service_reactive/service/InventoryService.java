@@ -14,9 +14,7 @@ import com.shoppix.inventory_service_reactive.enums.MerchantProductEnum;
 import com.shoppix.inventory_service_reactive.events.InventoryEvent;
 import com.shoppix.inventory_service_reactive.events.MerchantProductEvent;
 import com.shoppix.inventory_service_reactive.exception.InventoryServiceException;
-import com.shoppix.inventory_service_reactive.pojo.MerchantProducts;
-import com.shoppix.inventory_service_reactive.pojo.ProductVariations;
-import com.shoppix.inventory_service_reactive.pojo.SKU;
+import com.shoppix.inventory_service_reactive.pojo.MerchantProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +45,8 @@ public class InventoryService {
 
     @Autowired
     private InventoryKafkaProducerService inventoryKafkaProducerService;
+    @Autowired
+    private InventoryRepo inventoryRepo;
 
 	@Autowired
     public InventoryService(ObjectMapper objectMapper) {
@@ -96,7 +96,7 @@ public class InventoryService {
 								.onErrorResume(e -> {
 									inventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
 									inventory.setFirstCreatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-									deleteByInventoryId(inventory.getInventoryId());
+									deleteByInventoryId(inventory.getInventoryId()).subscribe();
 									LOGGER.error("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e);
 									return Mono.error(new InventoryServiceException("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e));
 								});
@@ -151,7 +151,7 @@ public class InventoryService {
 									LOGGER.info("INVENTORY SAVING FAILED..");
 									newProductInventory.setEventStatus(InventoryEnum.PRODUCT_INVENTORY_INIT_FAILED.name());
 									newProductInventory.setLastUpdatedAt(new SimpleDateFormat("dd-MM-yyyy HH:mm:ss.ssss z").format(new Date()));
-									deleteByInventoryId(newProductInventory.getInventoryId());
+									deleteByInventoryId(newProductInventory.getInventoryId()).subscribe();
 									LOGGER.error("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e);
 									return Mono.error(new InventoryServiceException("OOPS TECHNICAL ERROR! NEW INVENTORY ADDING PROCESS FAILED", e));
 								});
@@ -164,19 +164,19 @@ public class InventoryService {
 		LOGGER.info("UPDATING PRODUCT DATA FOR MERCHANT");
 		try{
 
-			MerchantProducts merchantProducts = new MerchantProducts();
-			merchantProducts.setMerchantId(inventory.getMerchantId());
-			merchantProducts.setMerchantSellingName(inventory.getMerchantSellingName());
-			merchantProducts.setParentProductId(inventory.getParentProductId());
-			merchantProducts.setProductName(inventory.getProductName());
-			merchantProducts.setInventoryId(inventory.getInventoryId());
-			merchantProducts.setInventoryCode(inventory.getInventoryCode());
+			MerchantProduct merchantProduct = new MerchantProduct();
+			merchantProduct.setMerchantId(inventory.getMerchantId());
+			merchantProduct.setMerchantSellingName(inventory.getMerchantSellingName());
+			merchantProduct.setParentProductId(inventory.getParentProductId());
+			merchantProduct.setProductName(inventory.getProductName());
+			merchantProduct.setInventoryId(inventory.getInventoryId());
+			merchantProduct.setInventoryCode(inventory.getInventoryCode());
 
 
 			MerchantProductEvent merchantProductEvent = new MerchantProductEvent();
 			merchantProductEvent.setMerchantId(inventory.getMerchantId());
 			merchantProductEvent.setMerchantMessageType(MerchantProductEnum.MERCHANT_PRODUCT_UPDATE.name());
-			merchantProductEvent.setMerchantProducts(merchantProducts);
+			merchantProductEvent.setMerchantProduct(merchantProduct);
 
 			String merchantAsMessage = objectMapper.writeValueAsString(merchantProductEvent);
 			inventoryKafkaProducerService.sendMessage(merchantTopic, merchantAsMessage);
@@ -240,24 +240,29 @@ public class InventoryService {
 	}
 
 
-	public AtomicBoolean deleteByInventoryId(long inventoryId) {
+	public Mono<Boolean> deleteByInventoryId(long inventoryId) {
 
 		LOGGER.info("DELETING... INVENTORY DETAILS WITH INVENTORY ID ["+inventoryId+"]");
-		AtomicBoolean stockDetailsDeleted = new AtomicBoolean(false);
-		Mono<Inventory> stockExists = getInventoryById(inventoryId);
-		stockExists.publishOn(Schedulers.parallel()).filter(product -> {
-			if((product != null)){
-				invRepo.deleteById(inventoryId);
-				stockDetailsDeleted.set(true);
-				LOGGER.info("STOCK INVENTORY DETAILS DELETED WITH INVENTORY ID ["+inventoryId+"]");
-			}
-			return true;
-		}).switchIfEmpty(Mono.error(() -> {
-			LOGGER.error("ERROR WHILE DELETING STOCK INVENTORY DETAILS WITH INVENTORY ID ["+inventoryId+"] | NOT FOUND");
-			throw new InventoryServiceException("ERROR WHILE DELETING STOCK INVENTORY DETAILS WITH INVENTORY ID ["+inventoryId+"] | NOT FOUND");
-		})).doOnNext(System.out::println).delaySubscription(Duration.ofMillis(3000));
+		return invRepo.findById(inventoryId).hasElement().doOnSuccess(invId -> {
+			LOGGER.info("INVENTORY DELETED SUCCESSFULLY ["+inventoryId+"]");
+			invRepo.deleteById(inventoryId).subscribe();
+		}).switchIfEmpty(Mono.defer(() -> {
+			LOGGER.info("NO INVENTORY FOUND WITH ID [" + inventoryId + "]");
+			return Mono.just(false);
+		}));
+	}
 
-		return stockDetailsDeleted;
+	public void deleteInventoryConnectedToMerchant(long merchantId) throws InventoryServiceException{
+
+		try{
+			getAllInventoryDetails().toStream().filter(inventory -> inventory.getMerchantId() == merchantId).forEach(inventory -> {
+				deleteByInventoryId(inventory.getInventoryId()).subscribe();
+				LOGGER.info("INVENTORY ID ["+inventory.getInventoryId()+"] DELETED");
+			});
+		} catch (Exception e) {
+			LOGGER.error("ERROR DURING DELETING INVENTORY CONNECTED TO MERCHANT ID ["+merchantId+"]");
+			throw new InventoryServiceException("ERROR DURING DELETING INVENTORY CONNECTED TO MERCHANT ID ["+merchantId+"]");
+		}
 	}
 
 	private String generateLastUpdatedDateTime(Date date) {
@@ -276,7 +281,6 @@ public class InventoryService {
 
 		UUID uuid = UUID.randomUUID();
 
-		// Convert UUID to string and take the first 5 characters
 		String shortUuid = "INV-"+uuid.toString().substring(0, 5)+"-"+inventoryId;
 		return shortUuid;
 	}

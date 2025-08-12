@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class MerchantProducts {
+public class MerchantProduct {
 
     @Field(name = "MERCHANT_ID")
     private long merchantId;

@@ -3,6 +3,7 @@ package com.shoppix.product_reactive_service.controller;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.shoppix.product_reactive_service.exception.ProductServiceException;
+import com.shoppix.product_reactive_service.pojo.ResponseMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,17 +102,30 @@ public class ProductController {
 	}
 
 	@DeleteMapping("/deleteProductById/{productId}")
-	public ResponseEntity<Mono<Boolean>> deleteProductById(@PathVariable("productId") String productId) throws ProductServiceException{
+	public Mono<ResponseEntity<ResponseMessage>> deleteProductById(@PathVariable("productId") String productId) throws ProductServiceException{
 
-		AtomicBoolean productDeleted = productService.deleteProductById(productId);
 
-		if(productDeleted.equals(true)){
-			LOGGER.info("PRODUCT ID "+productId+" SUCCESSFULLY DELETED");
-			return new ResponseEntity("PRODUCT ID ["+productId+"] SUCCESSFULLY DELETED ["+productDeleted+"]",HttpStatus.FORBIDDEN);
-		}else{
-			LOGGER.error("ERROR DELETING PRODUCT WITH PRODUCT ID ["+productId+"] | NOT FOUND");
-			throw new ProductServiceException("ERROR DELETING PRODUCT WITH PRODUCT ID ["+productId+"] | NOT FOUND");
-		}
+		return productService.deleteByParentProductId(productId)
+				.flatMap(deleted -> {
+					if(deleted) {
+						ResponseMessage responseMessage = new ResponseMessage();
+						responseMessage.setStatusCode(200);
+						responseMessage.setMessage("PRODUCT DELETED WITH ID [" + productId + "]");
+						return Mono.just(ResponseEntity.ok(responseMessage));
+					} else{
+						ResponseMessage responseMessage = new ResponseMessage();
+						responseMessage.setStatusCode(404);
+						responseMessage.setMessage("NO PRODUCT FOUND WITH ID [" + productId + "]");
+						return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).body(responseMessage));
+					}
+				})
+				.onErrorResume(e -> {
+					LOGGER.error("Error deleting product with ID [{}]", productId, e);
+					ResponseMessage responseMessage = new ResponseMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ERROR DELETING MERCHANT WITH ID [" + productId + "]");
+					responseMessage.setStatusCode(500);
+					responseMessage.setMessage("Error deleting product with ID [" + productId + "]");
+					return Mono.just(ResponseEntity.internalServerError().body(responseMessage));
+				});
 	}
 
 	@GetMapping("/check-pincode/{productId}/{pincode}")

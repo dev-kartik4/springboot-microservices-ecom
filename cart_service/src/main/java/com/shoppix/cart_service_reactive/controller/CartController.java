@@ -1,7 +1,9 @@
 package com.shoppix.cart_service_reactive.controller;
 
 import com.shoppix.cart_service_reactive.entity.Cart;
+import com.shoppix.cart_service_reactive.entity.CartProduct;
 import com.shoppix.cart_service_reactive.exception.CartServiceException;
+import com.shoppix.cart_service_reactive.pojo.ResponseMessage;
 import com.shoppix.cart_service_reactive.repo.CartRepo;
 import com.shoppix.cart_service_reactive.service.CartService;
 import org.slf4j.Logger;
@@ -39,12 +41,12 @@ public class CartController {
      * @return
      * @throws CartServiceException
      */
-    @PostMapping("/createCart/customer")
+    @PostMapping("/createOrUpdateCart/customer")
     @ResponseBody
-    public ResponseEntity<Mono<Cart>> createCart(@RequestBody Cart cart) throws CartServiceException{
+    public Mono<ResponseMessage> createOrUpdateCart(@RequestBody Cart cart) throws CartServiceException{
 
-        Mono<Cart> customerCart = cartService.createOrUpdateCart(cart);
-        return new ResponseEntity(customerCart,HttpStatus.OK);
+        Mono<ResponseMessage> customerCart = cartService.createOrUpdateCart(cart);
+        return customerCart;
     }
 
     /**
@@ -57,12 +59,12 @@ public class CartController {
      * @throws CartServiceException
      */
     @GetMapping("/viewCart/customer/{customerIdForCart}")
-    public ResponseEntity<Mono<Cart>> getCartDetails(@PathVariable("customerIdForCart") int customerIdForCart) throws CartServiceException{
+    public Mono<ResponseMessage> viewCartDetails(@PathVariable("customerIdForCart") int customerIdForCart) throws CartServiceException{
 
         LOGGER.info("LOADING YOUR CART DETAILS.....");
-        Mono<Cart> cartDetails = cartService.getCartDetails(customerIdForCart);
+        Mono<ResponseMessage> cartDetailsMessage = cartService.getCartDetails(customerIdForCart);
 
-        return new ResponseEntity(cartDetails,HttpStatus.OK);
+        return cartDetailsMessage;
     }
 
     /**
@@ -71,17 +73,17 @@ public class CartController {
      * API TO ADD PRODUCT TO CART
      *
      * @param customerIdForCart
-     * @param cartProd
+     * @param cartProduct
      * @return
      * @throws CartServiceException
      */
-//    @PutMapping("/customer/{customerIdForCart}/addProductToCart")
-//    public ResponseEntity<Mono<Cart>> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestBody CartProduct cartProd) throws CartServiceException{
-//
-//        Mono<Cart> updatedCartWithProducts = cartService.addProductToCart(customerIdForCart,cartProd);
-//
-//        return new ResponseEntity(updatedCartWithProducts, HttpStatus.OK);
-//    }
+    @PutMapping("/customer/{customerIdForCart}/addProductToCart")
+    public Mono<ResponseMessage> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestParam("productId") String productId,@RequestBody CartProduct cartProduct) throws CartServiceException{
+
+        Mono<ResponseMessage> updatedCartWithProducts = cartService.addProductToCart(customerIdForCart,productId,cartProduct);
+
+        return updatedCartWithProducts;
+    }
 
     /**
      * WILL BE CONTROLLED BY USER AND ADMIN BOTH

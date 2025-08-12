@@ -14,5 +14,7 @@ public interface InventoryRepo extends ReactiveMongoRepository<Inventory, Long> 
 	@Query("{'parentProductId':  ?0}")
 	Mono<Inventory> findByParentProductId(String parentProductId);
 
+	@Query("{'merchantId':  ?0}")
+	Mono<Void> deleteByMerchantId(long merchantId);
 
 }

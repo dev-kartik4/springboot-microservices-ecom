@@ -1,4 +1,4 @@
-package com.shoppix.merchant_service_reactive.enums;
+package com.shoppix.inventory_service_reactive.enums;
 
 public enum MerchantEnum {
 

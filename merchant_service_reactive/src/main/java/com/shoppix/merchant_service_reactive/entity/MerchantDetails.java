@@ -50,7 +50,7 @@ public class MerchantDetails {
     private String gstInTaxInformation;
 
     @Field(name = "PRODUCTS_BY_MERCHANT")
-    private List<MerchantProducts> listOfProductsByMerchant;
+    private List<MerchantProduct> listOfProductsByMerchant;
 
     @Field(name = "MERCHANT_EVENT_STATUS")
     private String eventStatus;

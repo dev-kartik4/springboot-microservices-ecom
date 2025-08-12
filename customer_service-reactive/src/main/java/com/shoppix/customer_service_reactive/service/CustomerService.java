@@ -4,13 +4,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.customer_service_reactive.entity.Address;
 import com.shoppix.customer_service_reactive.entity.Customer;
+import com.shoppix.customer_service_reactive.enums.CartProductEnum;
 import com.shoppix.customer_service_reactive.enums.CustomerEnum;
 import com.shoppix.customer_service_reactive.events.CartEvent;
+import com.shoppix.customer_service_reactive.events.CartProductEvent;
 import com.shoppix.customer_service_reactive.events.CustomerEvent;
 import com.shoppix.customer_service_reactive.exception.CustomerServiceException;
 import com.shoppix.customer_service_reactive.model.Cart;
 import com.shoppix.customer_service_reactive.model.CartProduct;
 import com.shoppix.customer_service_reactive.model.Order;
+import com.shoppix.customer_service_reactive.model.ResponseMessage;
 import com.shoppix.customer_service_reactive.repo.CustomerRepo;
 import com.shoppix.customer_service_reactive.util.CustomerUtil;
 import org.slf4j.Logger;
@@ -25,13 +28,12 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.text.SimpleDateFormat;
-import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.TimeZone;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerService {
@@ -77,16 +79,22 @@ public class CustomerService {
      * @return
      * @throws CustomerServiceException
      */
-    public Mono<Customer> createOrUpdateCustomer(Customer customer) {
-
+    public Mono<ResponseMessage> createOrUpdateCustomer(Customer customer) {
         LOGGER.info("FETCHING CUSTOMER EXISTENCE...");
 
         return customerRepo.findByEmailId(customer.getEmailId())
-                .switchIfEmpty(Mono.defer(() -> createNewCustomer(customer)))
-                .flatMap(existingCustomer -> updateExistingCustomer(existingCustomer, customer));
+                // If customer not found, create new one, else update the existing one
+                .defaultIfEmpty(null)  // Mono.just() to null if no customer is found
+                .flatMap(existingCustomer -> {
+                    if (existingCustomer == null) {
+                        return createNewCustomer(customer);
+                    } else {
+                        return updateExistingCustomer(existingCustomer, customer);
+                    }
+                });
     }
 
-    private Mono<Customer> createNewCustomer(Customer customer) {
+    private Mono<ResponseMessage> createNewCustomer(Customer customer) {
         LOGGER.info("CUSTOMER REGISTRATION IN PROGRESS");
 
         Customer newCustomer = new Customer();
@@ -104,36 +112,50 @@ public class CustomerService {
 
         Cart cart = new Cart();
         cart.setCustomerIdForCart(newCustomer.getCustomerId());
-        cart.setCartProducts(new LinkedList<>());
+        cart.setCartProducts(new ArrayList<>());
 
-        return customerRepo.insert(newCustomer).subscribeOn(Schedulers.parallel())
+        return customerRepo.insert(newCustomer)
+                .subscribeOn(Schedulers.parallel())  // Ensure to run on parallel thread
                 .doOnSuccess(savedCustomer -> {
                     LOGGER.info("CUSTOMER AND THEIR CART CREATED SUCCESSFULLY");
                     try {
                         cart.setEventStatus(CustomerEnum.CUSTOMER_REGISTERED.name());
                         cart.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
                         createOrUpdateCartForCustomer(cart);
-                        sendNotificationToCustomer(CustomerEnum.CUSTOMER_REGISTERED.name(),newCustomer.getCustomerId())
+
+                        // Send notification and log process completion
+                        sendNotificationToCustomer(CustomerEnum.CUSTOMER_REGISTERED.name(), newCustomer.getCustomerId())
                                 .doOnTerminate(() -> LOGGER.info("Process completed"))
                                 .subscribe();
+
                     } catch (JsonProcessingException e) {
                         throw new RuntimeException(e);
                     }
                 })
+                .map(savedCustomer -> ResponseMessage.builder()
+                        .statusCode(200)
+                        .message("CUSTOMER REGISTERED")
+                        .timestamp(LocalDateTime.now().toString())
+                        .responseData(savedCustomer)
+                        .errorDetails(null)
+                        .path("/customer/createOrUpdateCustomer")
+                        .build())
                 .onErrorResume(e -> {
-                    newCustomer.setEventStatus(CustomerEnum.CUSTOMER_DELETED.name());
-                    newCustomer.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
-                    newCustomer.setAccountExistence(false);
-                    customerRepo.save(newCustomer).subscribe();
                     LOGGER.error("OOPS TECHNICAL ERROR! NEW CUSTOMER REGISTRATION FAILED", e);
-                    return Mono.error(new CustomerServiceException("OOPS TECHNICAL ERROR! NEW CUSTOMER REGISTRATION FAILED", e));
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("OOPS TECHNICAL ERROR! NEW CUSTOMER REGISTRATION FAILED")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/createOrUpdateCustomer")
+                            .build());
                 });
     }
 
-    private Mono<Customer> updateExistingCustomer(Customer existingCustomer, Customer updatedCustomer) {
+    private Mono<ResponseMessage> updateExistingCustomer(Customer existingCustomer, Customer updatedCustomer) {
         LOGGER.info("UPDATING EXISTING CUSTOMER...");
 
-        existingCustomer.setCustomerId(existingCustomer.getCustomerId());
         existingCustomer.setCustomerName(updatedCustomer.getCustomerName());
         existingCustomer.setEmailId(updatedCustomer.getEmailId());
         existingCustomer.setAddress(updatedCustomer.getAddress());
@@ -141,30 +163,62 @@ public class CustomerService {
         existingCustomer.setPhone(updatedCustomer.getPhone());
         existingCustomer.getMyOrders().addAll(updatedCustomer.getMyOrders());
         existingCustomer.setEventStatus(CustomerEnum.CUSTOMER_REGISTERED.name());
-        existingCustomer.setCreatedDateTime(existingCustomer.getCreatedDateTime());
         existingCustomer.setLastUpdatedDateTime(generateLastUpdatedDateTime(new Date()));
         existingCustomer.setAccountExistence(true);
 
         // Save the updated customer
         return customerRepo.save(existingCustomer)
-                .doOnSuccess(savedCustomer -> LOGGER.info("CUSTOMER UPDATED SUCCESSFULLY"))
+                .map(savedCustomer -> ResponseMessage.builder()
+                        .statusCode(200)
+                        .message("CUSTOMER UPDATED SUCCESSFULLY")
+                        .timestamp(LocalDateTime.now().toString())
+                        .responseData(savedCustomer)
+                        .errorDetails(null)
+                        .path("/customer/createOrUpdateCustomer")
+                        .build())
                 .onErrorResume(e -> {
                     LOGGER.error("Failed to update customer", e);
-                    return Mono.error(new CustomerServiceException("Failed to update customer", e));
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("FAILED TO UPDATE CUSTOMER")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/createOrUpdateCustomer")
+                            .build());
                 });
     }
 
-    public Mono<Customer> addYourNewAddress(String emailId, Address address) throws CustomerServiceException{
+    public Mono<ResponseMessage> addYourNewAddress(String emailId, Address address) throws CustomerServiceException{
 
         LOGGER.info("UPDATING NEW ADDRESS DETAILS FOR CUSTOMER [" +emailId+"]");
         Mono<Customer> existingCustomerData = customerRepo.findByEmailId(emailId);
-        Mono<Customer> updatedCustomerData =  existingCustomerData.publishOn(Schedulers.parallel()).map(updatedCustomer -> {
-            updatedCustomer.getAddress().add(address);
-            customerRepo.save(updatedCustomer).subscribe();
-            return updatedCustomer;
-        });
-
-        return updatedCustomerData;
+        return existingCustomerData
+                .publishOn(Schedulers.parallel())  // Use parallel scheduler to ensure non-blocking operations
+                .flatMap(existingCustomer -> {
+                    existingCustomer.getAddress().add(address);
+                    return customerRepo.save(existingCustomer)
+                            .map(updatedCustomer -> ResponseMessage.builder()
+                                    .statusCode(200)
+                                    .message("NEW ADDRESS ADDED SUCCESSFULLY")
+                                    .timestamp(LocalDateTime.now().toString())
+                                    .responseData(updatedCustomer)
+                                    .errorDetails(null)
+                                    .path("/customer/addNewAddress/"+emailId)
+                                    .build())
+                            .onErrorResume(e -> {
+                                LOGGER.error("Error saving updated customer address", e);
+                                // Return an error response message in case of failure
+                                return Mono.just(ResponseMessage.builder()
+                                        .statusCode(500)
+                                        .message("ERROR SAVING UPDATED CUSTOMER ADDRESS")
+                                        .timestamp(LocalDateTime.now().toString())
+                                        .responseData(null)
+                                        .errorDetails(List.of(e.getMessage()))
+                                        .path("/customer/addNewAddress/"+emailId)
+                                        .build());
+                            });
+                });
     }
 
     /**
@@ -176,13 +230,50 @@ public class CustomerService {
      * @return
      * @throws CustomerServiceException
      */
-    public Mono<Customer> getCustomerById(int customerId) throws CustomerServiceException {
+    public Mono<ResponseMessage> getCustomerById(int customerId) {
+        LOGGER.info("FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + customerId + "]...");
 
-        LOGGER.info("FETCHING CUSTOMER DETAILS WITH CUSTOMER ID ["+customerId+"]...");
-
+        // Fetch customer by ID from the repository
         Mono<Customer> customerMono = customerRepo.findById(customerId);
 
-        return customerMono.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.empty());
+        return customerMono
+                .publishOn(Schedulers.parallel()) // Ensure parallel execution
+                .flatMap(customer -> {
+                    if (customer == null) {
+                        // If no customer is found, return a not-found response
+                        LOGGER.error("Customer with ID " + customerId + " not found");
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(404)
+                                .message("CUSTOMER NOT FOUND")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(null)
+                                .errorDetails(List.of("CUSTOMER WITH ID " + customerId + " DOES NOT EXIST"))
+                                .path("/customer/getCustomerById/"+customerId)
+                                .build());
+                    } else {
+                        // If customer is found, return the customer details in the response
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(200)
+                                .message("CUSTOMER DETAILS FETCHED SUCCESSFULLY")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(customer)
+                                .errorDetails(null)
+                                .path("/customer/getCustomerById/"+customerId)
+                                .build());
+                    }
+                })
+                .onErrorResume(e -> {
+                    // Handle any unexpected error and return a generic error response
+                    LOGGER.error("ERROR FETCHING CUSTOMER DETAILS", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("ERROR FETCHING CUSTOMER DETAILS")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/getCustomerById/"+customerId)
+                            .build());
+                });
     }
 
     /**
@@ -194,18 +285,48 @@ public class CustomerService {
      * @return
      * @throws CustomerServiceException
      */
-    public Mono<Customer> getCustomerByEmail(String emailId) throws CustomerServiceException {
+    public Mono<ResponseMessage> getCustomerByEmail(String emailId) throws CustomerServiceException {
 
         Mono<Customer> customerMono = customerRepo.findByEmailId(emailId);
 
-        LOGGER.info("FETCHING CUSTOMER DETAILS WITH CUSTOMER EMAIL ID ["+emailId+"]...");
-
-        LOGGER.info("CUSTOMER BODY OBJECT ["+customerMono.toString()+"]");
-        return customerMono.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
-                    LOGGER.error("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + emailId + "]");
-                    throw new CustomerServiceException("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + emailId + "]");
-                }
-        ));
+        return customerMono
+                .publishOn(Schedulers.parallel()) // Ensure parallel execution
+                .flatMap(customer -> {
+                    if (customer == null) {
+                        // If no customer is found, return a not-found response
+                        LOGGER.error("CUSTOMER WITH EMAIL ID [" + emailId + "] NOT FOUND");
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(404)
+                                .message("CUSTOMER NOT FOUND")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(null)
+                                .errorDetails(List.of("CUSTOMER WITH EMAIL ID " + emailId + " DOES NOT EXIST"))
+                                .path("/customer/getCustomerByEmail/"+emailId)
+                                .build());
+                    } else {
+                        // If customer is found, return the customer details in the response
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(200)
+                                .message("CUSTOMER DETAILS FETCHED SUCCESSFULLY")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(customer)
+                                .errorDetails(null)
+                                .path("/customer/getCustomerByEmail/"+emailId)
+                                .build());
+                    }
+                })
+                .onErrorResume(e -> {
+                    // Handle any unexpected error and return a generic error response
+                    LOGGER.error("ERROR FETCHING CUSTOMER DETAILS WITH EMAIL ID [" + emailId + "]", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("ERROR FETCHING CUSTOMER DETAILS ")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/getCustomerByEmail/"+emailId)
+                            .build());
+                });
     }
 
     /**
@@ -217,22 +338,58 @@ public class CustomerService {
      * @return
      * @throws CustomerServiceException
      */
-    public Mono<Customer> getDefaultAddressSelectedByCustomerEmailId(String emailId) throws CustomerServiceException {
+    public Mono<ResponseMessage> getDefaultAddressSelectedByCustomerEmailId(String emailId) {
+        LOGGER.info("SERVICE ADDRESS - FETCHING CUSTOMER ADDRESS");
 
-        LOGGER.info("SERVICE ADDRESS");
-        Mono<Customer> customerDetails = getCustomerByEmail(emailId);
+        // Fetch customer details by email
+        Mono<Customer> customerDetails = customerRepo.findByEmailId(emailId);
 
+        // Process customer details to filter for default address
         Mono<Customer> customerFinalInfo = customerDetails.publishOn(Schedulers.parallel()).map(customer -> {
-            customer.setAddress(customer.getAddress().stream().filter(Address::isDefaultAddress).toList());
+            // Filter the default address
+            customer.setAddress(customer.getAddress().stream()
+                    .filter(Address::isDefaultAddress)
+                    .collect(Collectors.toList()));
             return customer;
         });
-        LOGGER.info("ADDRESS "+customerDetails);
 
-        return customerFinalInfo.switchIfEmpty(Mono.error(() -> {
-                LOGGER.error("ERROR FETCHING CUSTOMER ADDRESS WITH CUSTOMER EMAIL ID [" + emailId + "]");
-                throw new CustomerServiceException("ERROR FETCHING CUSTOMER ADDRESS WITH CUSTOMER EMAIL ID [" + emailId + "]");
-                }
-        ));
+        return customerFinalInfo
+                .flatMap(customer -> {
+                    // If no default address found, return an error response
+                    if (customer.getAddress().isEmpty()) {
+                        LOGGER.error("NO DEFAULT ADDRESS FOUND FOR CUSTOMER WITH EMAIL ID [" + emailId + "]");
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(404)
+                                .message("NO DEFAULT ADDRESS FOUND")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(null)
+                                .errorDetails(List.of("NO DEFAULT ADDRESS FOUND FOR CUSTOMER WITH EMAIL ID " + emailId))
+                                .path("/customer/getDefaultAddressSelectedByCustomerEmailId/"+emailId)
+                                .build());
+                    } else {
+                        // If customer with default address is found, return success response
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(200)
+                                .message("DEFAULT ADDRESS FETCHED SUCCESSFULLY")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(customer.getAddress()) // Send the default address(es)
+                                .errorDetails(null)
+                                .path("/customer/getDefaultAddressSelectedByCustomerEmailId/"+emailId)
+                                .build());
+                    }
+                })
+                .onErrorResume(e -> {
+                    // Handle errors such as customer retrieval issues
+                    LOGGER.error("Error fetching customer details for email ID [" + emailId + "]", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("Error fetching customer address")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/getDefaultAddressSelectedByCustomerEmailId")
+                            .build());
+                });
     }
 
     /**
@@ -243,14 +400,49 @@ public class CustomerService {
      * @return
      * @throws CustomerServiceException
      */
-    public Flux<Customer> getAllCustomers() throws CustomerServiceException {
+    public Mono<ResponseMessage> getAllCustomers() throws CustomerServiceException {
 
         Flux<Customer> allCustomerInfo = customerRepo.findAll();
 
-        return allCustomerInfo.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
-            LOGGER.error("ERROR FETCHING ALL CUSTOMER INFO");
-            throw new CustomerServiceException("ERROR FETCHING ALL CUSTOMER INFO");
-        }));
+        // Process customer data
+        return allCustomerInfo.collectList() // Collect customers into a list
+                .publishOn(Schedulers.parallel()) // Ensure parallel execution
+                .flatMap(customers -> {
+                    if (customers.isEmpty()) {
+                        // If no customers are found, return an error response
+                        LOGGER.error("No customers found");
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(404)
+                                .message("No customers found")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(null)
+                                .errorDetails(List.of("No customer data available"))
+                                .path("/customer/getAllCustomers")
+                                .build());
+                    } else {
+                        // If customers are found, return a success response with the customers
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(200)
+                                .message("All customers fetched successfully")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(customers) // Send customer data
+                                .errorDetails(null)
+                                .path("/customer/getAllCustomers")
+                                .build());
+                    }
+                })
+                .onErrorResume(e -> {
+                    // Handle any unexpected error during the fetching process
+                    LOGGER.error("Error fetching all customer info", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("Error fetching all customer info")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/getAllCustomers")
+                            .build());
+                });
     }
 
     /**
@@ -261,16 +453,35 @@ public class CustomerService {
      * @param customerId
      * @throws CustomerServiceException
      */
-    public Mono<Boolean> deleteCustomerById(int customerId) {
+    public Mono<ResponseMessage> deleteCustomerById(int customerId) {
         LOGGER.info("IN PROCESS OF DELETING PROFILE WITH CUSTOMER ID [" + customerId + "]");
 
         return sendNotificationToCustomer(CustomerEnum.CUSTOMER_DELETED.name(), customerId)
                 .then(customerRepo.deleteById(customerId)) // Delete customer by ID
                 .then(deleteCartWhenCustomerIsDeleted(customerId)) // Delete customer cart (if needed)
-                .then(Mono.just(true)) // Final step, returning true
-                .onErrorResume(e -> { // If any error occurs, log and return false
+                .then(Mono.just(true)) // Return true indicating success
+                .flatMap(deletionSuccess -> {
+                    // Return success response
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(200)
+                            .message("Customer profile and associated cart deleted successfully.")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(true) // No data to return
+                            .errorDetails(null)
+                            .path("/customer/deleteCustomerById")
+                            .build());
+                })
+                .onErrorResume(e -> {
+                    // Handle error and return error response
                     LOGGER.error("Error during customer deletion process", e);
-                    return Mono.just(false);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("Error during customer deletion process")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(false)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/customer/deleteCustomerById")
+                            .build());
                 });
     }
 
@@ -283,28 +494,50 @@ public class CustomerService {
      * @param customerOrder
      * @return
      */
-    public Flux<Order> updateOrderList(Order customerOrder) throws CustomerServiceException {
+    public Mono<ResponseMessage> updateOrderList(Order customerOrder) throws CustomerServiceException {
 
-        Mono<Customer> customerData = getCustomerByEmail(customerOrder.getCustomerEmailId());
+        Mono<Customer> customerData = customerRepo.findByEmailId(customerOrder.getCustomerEmailId());
 
-        customerData.publishOn(Schedulers.parallel()).map(customer -> {
-            if(customer != null){
-                LOGGER.info("UPDATING ORDER LIST FOR CUSTOMER WITH EMAIL ID [" + customerOrder.getCustomerEmailId() + "]");
-                customer.getMyOrders().add(customerOrder);
-                createOrUpdateCustomer(customer);
-            }
-            return customer;
-        }).switchIfEmpty(Mono.defer(() -> {
-            LOGGER.error("ERROR UPDATING ORDER LIST FOR CUSTOMER WITH CUSTOMER EMAIL ID [" + customerOrder.getCustomerEmailId() + "]");
-            throw new CustomerServiceException("ERROR UPDATING ORDER LIST FOR CUSTOMER WITH CUSTOMER EMAIL ID [" + customerOrder.getCustomerEmailId() + "]");
-        }));
-
-        return Flux.from(customerData.flatMapIterable(Customer::getMyOrders)).delaySubscription(Duration.ofMillis(3000));
+        return customerData
+                .publishOn(Schedulers.parallel()) // Ensuring it's executed on a parallel thread
+                .flatMap(customer -> {
+                    if (customer != null) {
+                        // Add the order to the customer's order list
+                        customer.getMyOrders().add(customerOrder);
+                        return createOrUpdateCustomer(customer) // Reactive way of creating/updating customer
+                                .thenReturn(customer); // Ensure we return the customer after saving
+                    } else {
+                        return Mono.error(new CustomerServiceException("Customer not found with email ID [" + customerOrder.getCustomerEmailId() + "]"));
+                    }
+                })
+                .flatMap(updatedCustomer -> {
+                    // Return the updated list of orders as the response
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(200)
+                            .message("Order list updated successfully.")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(updatedCustomer.getMyOrders()) // Return updated order list
+                            .errorDetails(null)
+                            .path("/order/updateOrderList")
+                            .build());
+                })
+                .onErrorResume(e -> {
+                    // Handle errors and construct an error response
+                    LOGGER.error("Error updating order list for customer with email ID [" + customerOrder.getCustomerEmailId() + "]", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("Error updating order list.")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/order/updateOrderList")
+                            .build());
+                });
     }
 
     /*CUSTOMER-ORDER MICROSERVICE*/
 
-   /**
+    /**
      * WILL BE CONTROLLED BY USER AND ADMIN BOTH
      *
      * METHOD TO GET ALL ORDERS OF REGISTERED CUSTOMER
@@ -312,17 +545,59 @@ public class CustomerService {
      * @param emailId
      * @throws CustomerServiceException
      */
-    public Flux<Order> getAllOrdersForCustomer(String emailId) {
+    public Mono<ResponseMessage> getAllOrdersForCustomer(String emailId) {
 
-        Mono<Customer> completeCustomerInfo = getCustomerByEmail(emailId);
         LOGGER.info("FETCHING... YOUR RECENT ORDERS");
-        Flux<Order> customerOrders = completeCustomerInfo.publishOn(Schedulers.parallel()).flatMapIterable(Customer::getMyOrders);
 
-        return customerOrders.publishOn(Schedulers.parallel()).switchIfEmpty(Mono.error(() -> {
-            LOGGER.error("YOU HAVEN'T ORDERED ANYTHING YET");
-            throw new CustomerServiceException("YOU HAVEN'T ORDERED ANYTHING YET");
-        }));
+        // Retrieve customer details by email
+        Mono<Customer> completeCustomerInfo = customerRepo.findByEmailId(emailId);
+
+        return completeCustomerInfo
+                .publishOn(Schedulers.parallel()) // Ensure the processing happens on a parallel thread
+                .flatMap(customer -> {
+                    // Get all orders for the customer
+                    Flux<Order> customerOrders = Flux.fromIterable(customer.getMyOrders());
+
+                    // If no orders exist, return an error response
+                    return customerOrders
+                            .collectList() // Collect the orders into a list
+                            .flatMap(orders -> {
+                                if (orders.isEmpty()) {
+                                    // If no orders are found, return a structured error message
+                                    return Mono.just(ResponseMessage.builder()
+                                            .statusCode(404)
+                                            .message("YOU HAVEN'T ORDERED ANYTHING YET")
+                                            .timestamp(LocalDateTime.now().toString())
+                                            .responseData(null)
+                                            .errorDetails(null)
+                                            .path("/order/getAllOrdersForCustomer")
+                                            .build());
+                                }
+                                // If orders are found, return them as part of the success response
+                                return Mono.just(ResponseMessage.builder()
+                                        .statusCode(200)
+                                        .message("Successfully fetched all orders.")
+                                        .timestamp(LocalDateTime.now().toString())
+                                        .responseData(orders)
+                                        .errorDetails(null)
+                                        .path("/order/getAllOrdersForCustomer")
+                                        .build());
+                            });
+                })
+                .onErrorResume(e -> {
+                    // If any error occurs during the process, handle it and return an error response
+                    LOGGER.error("Error fetching orders for customer with email ID [" + emailId + "]", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("Error fetching orders.")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/order/getAllOrdersForCustomer")
+                            .build());
+                });
     }
+
 
     /*CUSTOMER-CART MICROSERVICE*/
 
@@ -335,63 +610,100 @@ public class CustomerService {
      * @param cartProduct
      * @return
      */
-    public Mono<Cart> addProductToCart(int customerIdForCart, CartProduct cartProduct){
+    public Mono<ResponseMessage> addProductToCart(int customerIdForCart,String productId,CartProduct cartProduct){
 
-        LOGGER.info("ADDING PRODUCTS TO CART...");
+        LOGGER.info("ADDING PRODUCT TO CART...");
 
-        Mono<Cart> existingCustomerCart = webClientBuilder.build()
-                .get()
-                .uri(CART_SERVICE_URL.concat("/viewCart/customer/").concat(String.valueOf(customerIdForCart)))
-                .retrieve()
-                .bodyToMono(Cart.class)
-                .publishOn(Schedulers.parallel());
+        try{
+            CartProductEvent cartProductEvent = new CartProductEvent();
+            cartProductEvent.setCustomerIdForCart(customerIdForCart);
+            cartProductEvent.setProductId(productId);
+            cartProductEvent.setCartProductMessageType(CartProductEnum.ADD_CART_PRODUCT.name());
+            cartProductEvent.setCartProduct(cartProduct);
 
-        Mono<Product> product = webClientBuilder.build()
-                .get()
-                    .uri(PRODUCT_SERVICE_URL.concat("/filterProductById/"+cartProduct.getProductId()))
-                        .retrieve()
-                            .bodyToMono(Product.class)
-                                .subscribeOn(Schedulers.parallel());
+            String cartAsMessage = objectMapper.writeValueAsString(cartProductEvent);
 
-        Flux<CartProduct> cartProducts = existingCustomerCart.flatMapIterable(Cart::getCartProducts);
+            customerKafkaProducerService.sendMessage(cartTopicName, cartAsMessage);
+//                    .doOnSuccess(prod -> LOGGER.info("PRODUCTS ADDED TO CART"))
+//                    .doOnError(e -> LOGGER.error("ERROR DURING ADDING PRODUCTS TO CART", e))// Subscribe to trigger the asynchronous call
 
-        return existingCustomerCart.publishOn(Schedulers.parallel()).map(existingCart -> {
-            existingCart.setCustomerIdForCart(customerIdForCart);
-            product.map(prod-> {
-                CartProduct cartProductToAdd = new CartProduct();
-                cartProductToAdd.setProductId(prod.getProductId());
-                cartProductToAdd.setProductName(prod.getProductName());
+            // Return a success response wrapped in Mono
+            return Mono.just(ResponseMessage.builder()
+                    .statusCode(200)
+                    .message("Product added to cart successfully.")
+                    .timestamp(LocalDateTime.now().toString())
+                    .responseData(cartProduct)
+                    .errorDetails(null)
+                    .path("/customer/"+customerIdForCart+"/addProductToCart")
+                    .build());
 
-                cartProductToAdd.setPrice(prod.getPrice());
-                cartProductToAdd.setStockStatus(prod.getStockStatus());
-                cartProductToAdd.setQuantity(cartProduct.getQuantity());
+        } catch (Exception e) {
+            LOGGER.error("ERROR DURING ADDING PRODUCTS TO CART", e);
 
-                Mono<CartProduct> filteredCartProduct = cartProducts.filter(cp -> cp.getProductId() == cartProduct.getProductId()).single();
-                Mono<CartProduct> filteredCartProductsMono = filteredCartProduct != null ? filteredCartProduct.switchIfEmpty(Mono.defer((Supplier<? extends Mono<? extends CartProduct>>) () -> {
-                    LOGGER.info("FINAL CART PRODUCT" + cartProduct);
-                    existingCart.getCartProducts().add(cartProduct);
-                    return Mono.just(cartProduct);
-                })) : filteredCartProduct.map(fcp -> {
-                    LOGGER.info("UPDATING EXISTING CART PRODUCT " + filteredCartProduct);
-                    CartProduct updatedCartProduct = new CartProduct();
-                    updatedCartProduct.setProductId(cartProduct.getProductId());
-                    updatedCartProduct.setProductName(cartProduct.getProductName());
-                    updatedCartProduct.setPrice(fcp.getPrice() + cartProduct.getPrice());
-                    updatedCartProduct.setQuantity(fcp.getQuantity() + cartProduct.getQuantity());
-                    LOGGER.info("FILTERED CART PRODUCT" + filteredCartProduct);
-                    existingCart.getCartProducts().add(updatedCartProduct);
-                    return updatedCartProduct;
-                });
-                existingCart.setTotalPrice((int) (existingCart.getTotalPrice() + (cartProduct.getPrice() * cartProduct.getQuantity())));
-                try {
-                    createOrUpdateCartForCustomer(existingCart);
-                } catch (JsonProcessingException e) {
-                    throw new RuntimeException(e);
-                }
-                return cartProductToAdd;
-            });
-            return existingCart;
-        });
+            // Return an error response wrapped in Mono in case of any failure
+            return Mono.just(ResponseMessage.builder()
+                    .statusCode(500)
+                    .message("Failed to add product to cart.")
+                    .timestamp(LocalDateTime.now().toString())
+                    .responseData(null)
+                    .errorDetails(List.of(e.getMessage()))
+                    .path("/customer/"+customerIdForCart+"/addProductToCart")
+                    .build());
+        }
+
+//        Mono<Cart> existingCustomerCart = webClientBuilder.build()
+//                .get()
+//                .uri(CART_SERVICE_URL.concat("/viewCart/customer/").concat(String.valueOf(customerIdForCart)))
+//                .retrieve()
+//                .bodyToMono(Cart.class)
+//                .publishOn(Schedulers.parallel());
+
+//        Mono<Product> product = webClientBuilder.build()
+//                .get()
+//                .uri(PRODUCT_SERVICE_URL.concat("/filterProductById/"+cartProduct.getProductId()))
+//                .retrieve()
+//                .bodyToMono(Product.class)
+//                .subscribeOn(Schedulers.parallel());
+
+//        Flux<CartProduct> cartProducts = existingCustomerCart.flatMapIterable(Cart::getCartProducts);
+//
+//        return existingCustomerCart.publishOn(Schedulers.parallel()).map(existingCart -> {
+//            existingCart.setCustomerIdForCart(customerIdForCart);
+//            product.map(prod-> {
+//                CartProduct cartProductToAdd = new CartProduct();
+//                cartProductToAdd.setProductId(prod.getProductId());
+//                cartProductToAdd.setProductName(prod.getProductName());
+//
+//                cartProductToAdd.setPrice(prod.getPrice());
+//                cartProductToAdd.setStockStatus(prod.getStockStatus());
+//                cartProductToAdd.setQuantity(cartProduct.getQuantity());
+//
+//                Mono<CartProduct> filteredCartProduct = cartProducts.filter(cp -> cp.getProductId() == cartProduct.getProductId()).single();
+//                Mono<CartProduct> filteredCartProductsMono = filteredCartProduct != null ? filteredCartProduct.switchIfEmpty(Mono.defer((Supplier<? extends Mono<? extends CartProduct>>) () -> {
+//                    LOGGER.info("FINAL CART PRODUCT" + cartProduct);
+//                    existingCart.getCartProducts().add(cartProduct);
+//                    return Mono.just(cartProduct);
+//                })) : filteredCartProduct.map(fcp -> {
+//                    LOGGER.info("UPDATING EXISTING CART PRODUCT " + filteredCartProduct);
+//                    CartProduct updatedCartProduct = new CartProduct();
+//                    updatedCartProduct.setProductId(cartProduct.getProductId());
+//                    updatedCartProduct.setProductName(cartProduct.getProductName());
+//                    updatedCartProduct.setPrice(fcp.getPrice() + cartProduct.getPrice());
+//                    updatedCartProduct.setQuantity(fcp.getQuantity() + cartProduct.getQuantity());
+//                    LOGGER.info("FILTERED CART PRODUCT" + filteredCartProduct);
+//                    existingCart.getCartProducts().add(updatedCartProduct);
+//                    return updatedCartProduct;
+//                });
+//                existingCart.setTotalPrice((int) (existingCart.getTotalPrice() + (cartProduct.getPrice() * cartProduct.getQuantity())));
+//                try {
+//                    createOrUpdateCartForCustomer(existingCart);
+//                } catch (JsonProcessingException e) {
+//                    throw new RuntimeException(e);
+//                }
+//                return cartProductToAdd;
+//            });
+//            return existingCart;
+//        });
     }
 
     /**
@@ -404,33 +716,39 @@ public class CustomerService {
      * @return
      * @throws CustomerServiceException
      */
-    public Mono<AtomicReference<String>> deleteProductsFromCart(int customerIdForCart, int productId) throws CustomerServiceException{
-        Mono<Cart> customerCart = webClientBuilder.build()
-                .get()
-                .uri(CART_SERVICE_URL.concat("/viewCart/customer/").concat(String.valueOf(customerIdForCart)))
-                .retrieve()
-                .bodyToMono(Cart.class)
-                .publishOn(Schedulers.parallel());
+    public Mono<ResponseMessage> deleteProductsFromCart(int customerIdForCart, int productId, CartProduct cartProduct) throws CustomerServiceException{
 
-        AtomicReference<String> cartProductDeleted = new AtomicReference<>("SUCCESS");
+        LOGGER.info("REMOVING PRODUCT FROM CART...");
 
-        Mono<AtomicReference<String>> productInCartMessage = customerCart.map(custoCart -> {
-            custoCart.getCartProducts().stream().forEach(cartProduct -> {
-                if(cartProduct.getProductId() == productId){
-                    custoCart.getCartProducts().remove(cartProduct);
-                    custoCart.setTotalPrice((int) (custoCart.getTotalPrice()-cartProduct.getPrice()));
-                    custoCart.setCustomerIdForCart(custoCart.getCustomerIdForCart());
-                    try {
-                        createOrUpdateCartForCustomer(custoCart);
-                    } catch (JsonProcessingException e) {
-                        throw new RuntimeException(e);
-                    }
-                    cartProductDeleted.set("SUCCESS");
-                }
-            });
-            return cartProductDeleted;
-        });
-        return productInCartMessage;
+
+
+        //        Mono<Cart> customerCart = webClientBuilder.build()
+//                .get()
+//                .uri(CART_SERVICE_URL.concat("/viewCart/customer/").concat(String.valueOf(customerIdForCart)))
+//                .retrieve()
+//                .bodyToMono(Cart.class)
+//                .publishOn(Schedulers.parallel());
+//
+//        AtomicReference<String> cartProductDeleted = new AtomicReference<>("SUCCESS");
+//
+//        Mono<AtomicReference<String>> productInCartMessage = customerCart.map(custoCart -> {
+//            custoCart.getCartProducts().stream().forEach(cartProduct -> {
+//                if(cartProduct.getProductId() == productId){
+//                    custoCart.getCartProducts().remove(cartProduct);
+//                    custoCart.setTotalPrice((int) (custoCart.getTotalPrice()-cartProduct.getPrice()));
+//                    custoCart.setCustomerIdForCart(custoCart.getCustomerIdForCart());
+//                    try {
+//                        createOrUpdateCartForCustomer(custoCart);
+//                    } catch (JsonProcessingException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                    cartProductDeleted.set("SUCCESS");
+//                }
+//            });
+//            return cartProductDeleted;
+//        });
+//        return productInCartMessage;
+        return null;
     }
 
     /**
@@ -481,7 +799,7 @@ public class CustomerService {
             LOGGER.info("REQUEST FOR CART TO BE DELETED AS CUSTOMER IS DEACTIVATING");
             return Mono.just(true);
         } catch(Exception e){
-            customerRepo.deleteById(customerId);
+            customerRepo.deleteById(customerId).subscribe();
             LOGGER.error("TECHNICAL ISSUES ON DURING CART INITIATION!");
         }
         return Mono.just(false);
