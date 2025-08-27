@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.meru</groupId>
-	<artifactId>checkout_service_reactive</artifactId>
+	<artifactId>checkout_reactive_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>checkout_service_reactive</name>
+	<name>checkout_reactive_service</name>
 	<description>CHECKOUT REACTIVE MICROSERVICE</description>
 	<properties>
 		<java.version>17</java.version>
@@ -126,6 +126,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>springboot-checkout-reactive-service-docker</finalName>
 	</build>
 
 </project>

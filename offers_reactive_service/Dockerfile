@@ -1,5 +1,13 @@
-FROM openjdk:17
-EXPOSE 8220
-LABEL authors="kartikcodes.dev"
-ADD target/springboot-offers-reactive-service-docker.jar springboot-offers-reactive-service-docker.jar
-ENTRYPOINT ["java","-jar","springboot-offers-reactive-service-docker.jar"]
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn -q -DskipTests package
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
+EXPOSE 8440
+LABEL maintainer="kartikcodes.dev"
+
+COPY --from=builder /app/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

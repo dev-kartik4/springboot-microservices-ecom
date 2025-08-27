@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.meru</groupId>
-	<artifactId>cart_service_reactive</artifactId>
+	<artifactId>cart_reactive_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>cart_service_reactive</name>
+	<name>cart_reactive_service</name>
 	<description>CART REACTIVE MICROSERVICE</description>
 	<properties>
 		<java.version>17</java.version>

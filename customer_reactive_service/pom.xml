@@ -9,9 +9,9 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.meru</groupId>
-    <artifactId>customer_service_reactive</artifactId>
+    <artifactId>customer_reactive_service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>customer_service_reactive</name>
+    <name>customer_reactive_service</name>
     <description>CUSTOMER REACTIVE MICROSERVICE</description>
     <properties>
         <java.version>17</java.version>

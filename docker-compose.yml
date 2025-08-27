@@ -18,23 +18,23 @@ services:
       - zookeeper
 
   mongodb:
-    image: mongo6.0
+    image: mongo:7.0
     container_name: mongo
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: kartiktelikicherla@outlook.com
-      MONGO_INITDB_ROOT_PASSWORD: kPHONENUMBER@04
+      MONGO_INITDB_ROOT_USERNAME:
+      MONGO_INITDB_ROOT_PASSWORD:
 
   config-reactive-service:
     container_name: config-reactive-service
     build:
-      context: .
+      context: ./config_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8888:8888"
     environment:
-      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom/tree/main/config_service_reactive
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 30s
@@ -47,12 +47,12 @@ services:
   customer-reactive-service:
     container_name: customer-reactive-service
     build:
-      context: .
+      context: ./customer_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8110:8110"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -67,12 +67,12 @@ services:
   product-reactive-service:
     container_name: product-reactive-service
     build:
-      context: .
+      context: ./product_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8220:8220"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -86,12 +86,12 @@ services:
   inventory-reactive-service:
     container_name: inventory-reactive-service
     build:
-      context: .
+      context: ./inventory_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8330:8330"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -105,12 +105,12 @@ services:
   offers-reactive-service:
     container_name: offers-reactive-service
     build:
-      context: .
+      context: ./offers_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8440:8440"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -125,12 +125,12 @@ services:
   cart-reactive-service:
     container_name: cart-reactive-service
     build:
-      context: .
+      context: ./cart_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8550:8550"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -145,12 +145,12 @@ services:
   order-reactive-service:
     container_name: order-reactive-service
     build:
-      context: .
+      context: ./order_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8660:8660"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -165,12 +165,12 @@ services:
   checkout-reactive-service:
     container_name: checkout-reactive-service
     build:
-      context: .
+      context: ./checkout_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8770:8770"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -184,12 +184,12 @@ services:
   notification-reactive-service:
     container_name: notification-reactive-service
     build:
-      context: .
+      context: ./notification_reactive_service
       dockerfile: Dockerfile
     ports:
-      - "8770:8770"
+      - "8880:8880"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
@@ -204,12 +204,12 @@ services:
   merchant-reactive-service:
     container_name: merchant-reactive-service
     build:
-      context: .
+      context: ./merchant_reactive_service
       dockerfile: Dockerfile
     ports:
       - "8990:8990"
     environment:
-      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
     healthcheck:
