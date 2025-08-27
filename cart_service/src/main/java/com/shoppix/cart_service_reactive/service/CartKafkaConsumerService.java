@@ -61,7 +61,7 @@ public class CartKafkaConsumerService {
                         .doOnError(error -> LOGGER.error("Error during cart deletion for customer ID [{}]", cartEvent.getCustomerIdForCart(), error))
                         .subscribe(); // Trigger the operation by subscribing
             } else if(cartEvent.getCartMessageType().equals(CartProductEnum.ADD_CART_PRODUCT.name())){
-                cartService.addProductToCart(cartEvent.getCustomerIdForCart(),cart)
+                cartService.addProductToCart(cartEvent.getCustomerIdForCart(),cart);
             }
 
 

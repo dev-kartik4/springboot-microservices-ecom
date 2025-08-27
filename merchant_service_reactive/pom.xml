@@ -126,6 +126,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+        <finalName>springboot-merchant-reactive-service-docker</finalName>
 	</build>
 
 </project>

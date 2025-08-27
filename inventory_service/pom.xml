@@ -127,6 +127,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+        <finalName>springboot-inventory-reactive-service-docker</finalName>
 	</build>
 
 </project>

@@ -17,3 +17,39 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper
+
+  mongodb:
+    image: mongo6.0
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  config-service:
+    container_name: config-service-reactive
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom/tree/main/config_service_reactive
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  customer-service-reactive:
+    container_name: customer-service-reactive
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8110:8110"
+    environment:
+      - SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+
+
+

@@ -145,7 +145,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<finalName>springboot-productservice-docker</finalName>
+		<finalName>springboot-product-reactive-service-docker</finalName>
 	</build>
 
 </project>
