@@ -1,5 +1,4 @@
-version: '3.8'
-
+version: '3.5'
 services:
   zookeeper:
     image: wurstmeister/zookeeper
@@ -23,8 +22,9 @@ services:
     container_name: mongo
     ports:
       - "27017:27017"
-    volumes:
-      - mongo-data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: kartiktelikicherla@outlook.com
+      MONGO_INITDB_ROOT_PASSWORD: kPHONENUMBER@04
 
   config-reactive-service:
     container_name: config-reactive-service
