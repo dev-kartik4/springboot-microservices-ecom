@@ -1,0 +1,731 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="5a7a8867-797d-4c9b-b103-8171298c9fd3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../cart_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/CartServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/advice/CartServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/config/CartKafkaConsumerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/config/CartKafkaProducerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/controller/CartController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/entity/Cart.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/entity/CartProduct.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/enums/CartEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/enums/CartProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/enums/CustomerEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/events/CartEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/events/CartProductEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/exception/CartServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/pojo/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/pojo/ProductDescription.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/pojo/ResponseMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/repo/CartRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/service/CartKafkaConsumerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/service/CartKafkaProducerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/java/com/shoppix/cart_service_reactive/service/CartService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../cart_service/src/test/java/com/shoppix/cart_service_reactive/CartServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/CheckoutServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/advice/CheckoutServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/controller/PaymentCheckoutController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/entity/PaymentCheckout.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/exception/CheckoutServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/model/Address.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/model/FinalPrintableInvoice.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/model/Order.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/model/OrderRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/model/PaymentOptions.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/model/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/pojo/ResponseErrorMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/java/com/meru/checkout_service_reactive/service/PaymentCheckoutService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../checkout_service/src/test/java/com/meru/checkout_service_reactive/CheckoutServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/src/main/java/com/meru/config_service/config_service/ConfigServiceApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../config_service/src/test/java/com/meru/config_service/config_service/ConfigServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.classpath" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.factorypath" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/.name" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/compiler.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/customer_service-reactive.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/encodings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/jarRepositories.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/jpa-buddy.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/uiDesigner.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.idea/workspace.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.project" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.settings/org.eclipse.core.resources.prefs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.settings/org.eclipse.jdt.apt.core.prefs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.settings/org.eclipse.jdt.core.prefs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.settings/org.eclipse.m2e.core.prefs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/.settings/org.springframework.ide.eclipse.prefs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/CustomerServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/advice/CustomerServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/config/CustomerKafkaConsumerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/config/CustomerKafkaProducerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/config/JwtAuthenticationEntryPoint.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/config/JwtRequestFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/config/SecurityConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/controller/CustomerController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/entity/Address.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/entity/Customer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/enums/CartEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/enums/CartProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/enums/CustomerEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/events/CartEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/events/CartProductEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/events/CustomerEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/exception/CustomerServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/model/Cart.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/model/CartProduct.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/model/Order.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/model/OrderRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/model/ResponseMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/repo/CustomerRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/service/CustomerKafkaConsumerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/service/CustomerKafkaProducerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/service/CustomerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/java/com/shoppix/customer_service_reactive/util/CustomerUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/CustomerServiceReactiveApplication.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/advice/CustomerServiceExceptionHandler.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/bean/Address.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/bean/Customer$CustomerBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/bean/Customer.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/config/CustomerKafkaConsumerConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/config/CustomerKafkaProducerConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/config/JwtAuthenticationEntryPoint.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/config/JwtRequestFilter.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/config/SecurityConfig.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/controller/CustomerController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/events/CartEnum.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/events/CartEvent.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/events/CustomerEnum.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/events/CustomerEvent.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/exception/CustomerServiceException.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/Cart.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/CartProduct.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/Order.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/OrderRequest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/Product.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/ProductDescription.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/model/ResponseErrorMessage.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/repo/CustomerRepo.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/service/CustomerKafkaConsumerService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/service/CustomerKafkaProducerService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/service/CustomerService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../customer_service-reactive/target/classes/com/shoppix/customer_service_reactive/util/CustomerUtil.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../docker-compose.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/eserver/eureka_service/EurekaServiceApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/eserver/eureka_service/EurekaServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/src/main/java/com/apigateway/gateway_service/GatewayServiceApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/src/main/java/com/apigateway/gateway_service/controller/GatewayController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../gateway_service/src/test/java/com/apigateway/gateway_service/GatewayServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/InventoryServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/advice/InventoryServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/config/InventoryKafkaConsumerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/config/InventoryKafkaProducerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/controller/InventoryController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/entity/DbSequence.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/entity/Inventory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/enums/InventoryEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/enums/MerchantEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/enums/MerchantProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/enums/ProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/enums/StockStatusEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/enums/StockTypeEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/events/InventoryEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/events/MerchantProductEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/exception/InventoryServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/pojo/MerchantProduct.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/pojo/ProductVariations.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/pojo/ResponseErrorMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/pojo/SKU.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/repo/InventoryRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/service/InventoryKafkaConsumerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/service/InventoryKafkaProducerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/service/InventoryService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/java/com/shoppix/inventory_service_reactive/service/SequenceGeneratorService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../inventory_service/src/test/java/com/shoppix/inventory_service_reactive/InventoryServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/MerchantServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/advice/MerchantServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/config/MerchantKafkaConsumerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/config/MerchantKafkaProducerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/controller/MerchantController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/entity/MerchantDetails.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/entity/MerchantProduct.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/enums/MerchantEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/enums/MerchantProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/events/MerchantEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/events/MerchantProductEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/exception/MerchantServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/pojo/ResponseMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/repo/MerchantRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/service/MerchantKafkaConsumerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/service/MerchantKafkaProducerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/service/MerchantService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/java/com/shoppix/merchant_service_reactive/util/MerchantUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../merchant_service_reactive/src/test/java/com/shoppix/merchant_service_reactive/MerchantServiceReactiveApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/.gitattributes" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/NotificationServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/config/EmailConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/config/NotificationKafkaConsumerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/config/NotificationKafkaProducerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/controller/NotificationController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/entity/EmailRequestDto.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/CartNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/CustomerNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/InventoryStockNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/OffersDiscountsNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/OrderNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/PaymentNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/enums/ShippingNotificationEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/events/CustomerEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/service/NotificationKafkaConsumerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/service/NotificationKafkaProducerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/java/com/shoppix/notification_service_reactive/service/NotificationService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/resources/static/shoppix.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/main/resources/templates/email.ftl" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../notification_service_reactive/src/test/java/com/shoppix/notification_service_reactive/NotificationServiceReactiveApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/OrderServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/advice/OrderServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/bean/DbSequence.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/bean/Order.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/bean/OrderRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/controller/OrderController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/exception/OrderServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/Address.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/Customer.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/FinalPrintableInvoice.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/Inventory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/Promotions.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/pojo/ResponseErrorMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/repo/OrderRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/service/OrderService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/service/SequenceGeneratorService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/java/com/meru/order_service_reactive/util/OrderUtil.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../order_service_reactive/src/test/java/com/meru/order_service_reactive/OrderServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/Dockerfile" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/ProductServiceReactiveApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/advice/ProductServiceExceptionHandler.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/config/ProductKafkaConsumerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/config/ProductKafkaProducerConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/controller/ProductController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/entity/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/entity/ProductDescription.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/entity/ProductVariations.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/entity/RatingsAndReviews.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/entity/SKU.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/enums/InventoryEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/enums/MerchantEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/enums/MerchantProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/enums/ProductEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/enums/StockStatusEnum.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/events/InventoryEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/events/MerchantProductEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/events/ProductEvent.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/exception/ProductServiceException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/pojo/CompleteProduct.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/pojo/Inventory.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/pojo/MerchantProduct.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/pojo/Offers.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/pojo/ResponseMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/pojo/Sequence.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/repo/ProductRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/repo/SKURepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/repo/SequenceRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/service/ProductKafkaConsumerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/service/ProductKafkaProducerService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/service/ProductService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/service/SequenceGeneratorService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/java/com/shoppix/product_reactive_service/utility/ProductIdGenerator.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/test/java/com/shoppix/product_reactive_service/ProductServiceApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../product_service/src/test/java/com/shoppix/product_reactive_service/service/ProductServiceTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/.mvn/wrapper/MavenWrapperDownloader.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/.mvn/wrapper/maven-wrapper.jar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/mvnw" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/mvnw.cmd" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/pom.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/PromotionsServiceApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/controller/PromotionController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/entity/Offers.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/entity/Promotions.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/pojo/Product.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/pojo/ResponseErrorMessage.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/repo/PromotionRepo.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/java/com/meru/promotions_reactive_service/service/PromotionService.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/resources/application.properties" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/main/resources/application.yml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../promotions_service/src/test/java/com/meru/promotions_reactive_service/PromotionsServiceApplicationTests.java" beforeDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;dev-kartik4&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/dev-kartik4/springboot-microservices-ecom.git&quot;,
+    &quot;accountId&quot;: &quot;7c0f39ca-034d-4d2f-af32-45f7678ac736&quot;
+  }
+}</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/src/main/resources/application.properties" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Dockerfile" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/java/com/eserver/eureka_service/EurekaServiceApplication.java" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/src/main/resources/application.yml" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/pom.xml" root0="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="MavenImportPreferences">
+    <option name="generalSettings">
+      <MavenGeneralSettings>
+        <option name="mavenHomeTypeForPersistence" value="WRAPPER" />
+      </MavenGeneralSettings>
+    </option>
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="24PRnCT7dYJzMcIcfptzoEr1tcN" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RequestMappingsPanelOrder0": "0",
+    "RequestMappingsPanelOrder1": "1",
+    "RequestMappingsPanelWidth0": "75",
+    "RequestMappingsPanelWidth1": "75",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.EurekaServiceApplication.executor": "Run",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "D:/PROGRAMMING/springboot-microservices-ecom/docker-compose.yml",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "SDKs",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.5203252",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "spring.configuration.checksum": "5387454e1079d32bb937a912a1898d62",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="EurekaServiceApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+      <module name="eureka_service" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.eserver.eureka_service.EurekaServiceApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-125ca727e0f0-intellij.indexing.shared.core-IU-243.23654.189" />
+        <option value="bundled-js-predefined-d6986cc7102b-822845ee3bb5-JavaScript-IU-243.23654.189" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5a7a8867-797d-4c9b-b103-8171298c9fd3" name="Changes" comment="" />
+      <created>1643530401975</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1643530401975</updated>
+      <workItem from="1643530403133" duration="43000" />
+      <workItem from="1651823675857" duration="614000" />
+      <workItem from="1651836585001" duration="4842000" />
+      <workItem from="1651917376671" duration="1800000" />
+      <workItem from="1651990052568" duration="1843000" />
+      <workItem from="1652001906776" duration="1403000" />
+      <workItem from="1652091827126" duration="1226000" />
+      <workItem from="1652098342973" duration="609000" />
+      <workItem from="1652099443827" duration="1207000" />
+      <workItem from="1652164674964" duration="1625000" />
+      <workItem from="1652346807257" duration="1800000" />
+      <workItem from="1652858140327" duration="1126000" />
+      <workItem from="1652934993102" duration="2995000" />
+      <workItem from="1653022187711" duration="690000" />
+      <workItem from="1653145603480" duration="876000" />
+      <workItem from="1653219682490" duration="827000" />
+      <workItem from="1653267508883" duration="1563000" />
+      <workItem from="1653991997272" duration="615000" />
+      <workItem from="1654074300059" duration="1244000" />
+      <workItem from="1654342241136" duration="4000" />
+      <workItem from="1655225775927" duration="318000" />
+      <workItem from="1655531825550" duration="870000" />
+      <workItem from="1655951752846" duration="696000" />
+      <workItem from="1655955569300" duration="657000" />
+      <workItem from="1655986455951" duration="1798000" />
+      <workItem from="1656035867863" duration="1007000" />
+      <workItem from="1656132088153" duration="854000" />
+      <workItem from="1656227817913" duration="1490000" />
+      <workItem from="1656296808150" duration="705000" />
+      <workItem from="1656389507563" duration="640000" />
+      <workItem from="1656466854642" duration="636000" />
+      <workItem from="1656573607006" duration="1813000" />
+      <workItem from="1656659898746" duration="1295000" />
+      <workItem from="1656741764804" duration="1624000" />
+      <workItem from="1657518183660" duration="30000" />
+      <workItem from="1657713306367" duration="1221000" />
+      <workItem from="1657772320581" duration="1858000" />
+      <workItem from="1657858617286" duration="653000" />
+      <workItem from="1657876612493" duration="1195000" />
+      <workItem from="1658226478141" duration="1184000" />
+      <workItem from="1658300992293" duration="2485000" />
+      <workItem from="1658339818639" duration="927000" />
+      <workItem from="1658373429404" duration="706000" />
+      <workItem from="1658476274473" duration="1701000" />
+      <workItem from="1658573209867" duration="2997000" />
+      <workItem from="1658662283748" duration="593000" />
+      <workItem from="1658680649841" duration="1992000" />
+      <workItem from="1660219623498" duration="1352000" />
+      <workItem from="1664522687361" duration="591000" />
+      <workItem from="1664543160264" duration="639000" />
+      <workItem from="1664555746047" duration="1435000" />
+      <workItem from="1664605446456" duration="602000" />
+      <workItem from="1666279392744" duration="777000" />
+      <workItem from="1666347107060" duration="3033000" />
+      <workItem from="1666680939007" duration="1867000" />
+      <workItem from="1666783317384" duration="930000" />
+      <workItem from="1666795945694" duration="1475000" />
+      <workItem from="1666835483788" duration="595000" />
+      <workItem from="1667018270578" duration="1869000" />
+      <workItem from="1667214122849" duration="1198000" />
+      <workItem from="1667306446321" duration="1410000" />
+      <workItem from="1667386187931" duration="1191000" />
+      <workItem from="1667706915348" duration="1006000" />
+      <workItem from="1667836537776" duration="2069000" />
+      <workItem from="1667917725596" duration="1788000" />
+      <workItem from="1667994970721" duration="2279000" />
+      <workItem from="1668081384975" duration="1352000" />
+      <workItem from="1668173528443" duration="1188000" />
+      <workItem from="1668182871745" duration="1352000" />
+      <workItem from="1675583942877" duration="726000" />
+      <workItem from="1675615253101" duration="1419000" />
+      <workItem from="1676193371368" duration="876000" />
+      <workItem from="1676211681289" duration="3015000" />
+      <workItem from="1680929232737" duration="1412000" />
+      <workItem from="1681011426948" duration="1763000" />
+      <workItem from="1681057797967" duration="751000" />
+      <workItem from="1681100052094" duration="719000" />
+      <workItem from="1681656702705" duration="972000" />
+      <workItem from="1681787061928" duration="693000" />
+      <workItem from="1681883524940" duration="1069000" />
+      <workItem from="1682398181399" duration="2639000" />
+      <workItem from="1682444468525" duration="486000" />
+      <workItem from="1682663729564" duration="616000" />
+      <workItem from="1685869150434" duration="1327000" />
+      <workItem from="1685884138891" duration="1353000" />
+      <workItem from="1686990577209" duration="1229000" />
+      <workItem from="1687068654788" duration="869000" />
+      <workItem from="1687628305696" duration="1033000" />
+      <workItem from="1687671791822" duration="1867000" />
+      <workItem from="1688191543142" duration="1793000" />
+      <workItem from="1688228940627" duration="1928000" />
+      <workItem from="1688297694389" duration="1264000" />
+      <workItem from="1688811859864" duration="1237000" />
+      <workItem from="1689037209179" duration="618000" />
+      <workItem from="1689125447576" duration="612000" />
+      <workItem from="1689210998326" duration="1212000" />
+      <workItem from="1689300888158" duration="1007000" />
+      <workItem from="1689389214426" duration="1835000" />
+      <workItem from="1689474258651" duration="594000" />
+      <workItem from="1689513139258" duration="765000" />
+      <workItem from="1689561223541" duration="1206000" />
+      <workItem from="1689610407360" duration="121000" />
+      <workItem from="1689610607137" duration="592000" />
+      <workItem from="1689612100024" duration="577000" />
+      <workItem from="1689617460812" duration="1317000" />
+      <workItem from="1689647916560" duration="1175000" />
+      <workItem from="1689745450636" duration="1486000" />
+      <workItem from="1689817768106" duration="3116000" />
+      <workItem from="1696055536926" duration="628000" />
+      <workItem from="1696077479201" duration="1772000" />
+      <workItem from="1696682047704" duration="1425000" />
+      <workItem from="1696748655610" duration="1815000" />
+      <workItem from="1697041643422" duration="2212000" />
+      <workItem from="1702880726501" duration="1074000" />
+      <workItem from="1703854606100" duration="1257000" />
+      <workItem from="1703912819441" duration="1184000" />
+      <workItem from="1703954817100" duration="1903000" />
+      <workItem from="1704106901209" duration="1818000" />
+      <workItem from="1704121129804" duration="532000" />
+      <workItem from="1704121855706" duration="945000" />
+      <workItem from="1704167569057" duration="1379000" />
+      <workItem from="1704462202034" duration="2664000" />
+      <workItem from="1704554826222" duration="1253000" />
+      <workItem from="1704595734931" duration="1654000" />
+      <workItem from="1704632864632" duration="960000" />
+      <workItem from="1704637831811" duration="640000" />
+      <workItem from="1704738593212" duration="720000" />
+      <workItem from="1704805021262" duration="1174000" />
+      <workItem from="1704812026539" duration="1869000" />
+      <workItem from="1704817630201" duration="1428000" />
+      <workItem from="1704822889295" duration="396000" />
+      <workItem from="1704897359943" duration="4194000" />
+      <workItem from="1704986381400" duration="2005000" />
+      <workItem from="1705540852284" duration="1203000" />
+      <workItem from="1705632523119" duration="1839000" />
+      <workItem from="1705808299831" duration="913000" />
+      <workItem from="1705848495014" duration="1245000" />
+      <workItem from="1705944452443" duration="1277000" />
+      <workItem from="1705984104155" duration="879000" />
+      <workItem from="1706674893354" duration="1193000" />
+      <workItem from="1706797613152" duration="605000" />
+      <workItem from="1706843661813" duration="1223000" />
+      <workItem from="1706891952052" duration="646000" />
+      <workItem from="1706970719957" duration="1216000" />
+      <workItem from="1707143692857" duration="609000" />
+      <workItem from="1708170035430" duration="841000" />
+      <workItem from="1708266280225" duration="815000" />
+      <workItem from="1708707523234" duration="13000" />
+      <workItem from="1709618879993" duration="610000" />
+      <workItem from="1709978801935" duration="1263000" />
+      <workItem from="1710048972126" duration="1164000" />
+      <workItem from="1714450234628" duration="1280000" />
+      <workItem from="1714536098112" duration="1420000" />
+      <workItem from="1714545490242" duration="2190000" />
+      <workItem from="1714616709018" duration="1849000" />
+      <workItem from="1714734958489" duration="363000" />
+      <workItem from="1715327046088" duration="2000" />
+      <workItem from="1715327061180" duration="1653000" />
+      <workItem from="1715396722475" duration="1273000" />
+      <workItem from="1715481712177" duration="1409000" />
+      <workItem from="1715745509182" duration="1218000" />
+      <workItem from="1715909691424" duration="808000" />
+      <workItem from="1716347353462" duration="1865000" />
+      <workItem from="1716431837822" duration="815000" />
+      <workItem from="1716520015068" duration="351000" />
+      <workItem from="1716520494937" duration="655000" />
+      <workItem from="1717126348632" duration="599000" />
+      <workItem from="1717214718870" duration="592000" />
+      <workItem from="1717317669091" duration="1356000" />
+      <workItem from="1717324660994" duration="869000" />
+      <workItem from="1717379290625" duration="1238000" />
+      <workItem from="1717468525097" duration="2079000" />
+      <workItem from="1717559989614" duration="1595000" />
+      <workItem from="1717599343363" duration="1775000" />
+      <workItem from="1717640326059" duration="1246000" />
+      <workItem from="1717696713704" duration="873000" />
+      <workItem from="1717734752595" duration="672000" />
+      <workItem from="1718639756195" duration="1206000" />
+      <workItem from="1718682054301" duration="1252000" />
+      <workItem from="1718726882155" duration="3000" />
+      <workItem from="1718726895644" duration="599000" />
+      <workItem from="1718805860225" duration="2345000" />
+      <workItem from="1718847165373" duration="1516000" />
+      <workItem from="1718906744486" duration="986000" />
+      <workItem from="1718936908841" duration="623000" />
+      <workItem from="1718993519841" duration="372000" />
+      <workItem from="1719024584092" duration="1307000" />
+      <workItem from="1719113644135" duration="593000" />
+      <workItem from="1719849739542" duration="601000" />
+      <workItem from="1720248030633" duration="706000" />
+      <workItem from="1720324109366" duration="1203000" />
+      <workItem from="1726392709450" duration="2733000" />
+      <workItem from="1726494622217" duration="616000" />
+      <workItem from="1726802478949" duration="739000" />
+      <workItem from="1728052477082" duration="1288000" />
+      <workItem from="1728101985652" duration="1356000" />
+      <workItem from="1728445293379" duration="1484000" />
+      <workItem from="1729321098812" duration="1222000" />
+      <workItem from="1729398375441" duration="1939000" />
+      <workItem from="1730010442023" duration="2149000" />
+      <workItem from="1731249019273" duration="592000" />
+      <workItem from="1731855392159" duration="1582000" />
+      <workItem from="1731918794637" duration="2808000" />
+      <workItem from="1731986636497" duration="3228000" />
+      <workItem from="1732072073791" duration="1921000" />
+      <workItem from="1732160800529" duration="684000" />
+      <workItem from="1732244071136" duration="635000" />
+      <workItem from="1732263455992" duration="599000" />
+      <workItem from="1732621865980" duration="1595000" />
+      <workItem from="1732726371755" duration="766000" />
+      <workItem from="1732764405847" duration="1128000" />
+      <workItem from="1732812596520" duration="1430000" />
+      <workItem from="1732848194642" duration="742000" />
+      <workItem from="1732944241034" duration="595000" />
+      <workItem from="1732962470408" duration="1863000" />
+      <workItem from="1732984468190" duration="595000" />
+      <workItem from="1733021094360" duration="2794000" />
+      <workItem from="1733146474377" duration="1390000" />
+      <workItem from="1733277759155" duration="638000" />
+      <workItem from="1733376492306" duration="589000" />
+      <workItem from="1733450919088" duration="5592000" />
+      <workItem from="1733591754331" duration="3404000" />
+      <workItem from="1733630746981" duration="5039000" />
+      <workItem from="1733668589089" duration="1809000" />
+      <workItem from="1733805442993" duration="670000" />
+      <workItem from="1733827162862" duration="475000" />
+      <workItem from="1733827799038" duration="3677000" />
+      <workItem from="1733893917228" duration="2300000" />
+      <workItem from="1733982101677" duration="3100000" />
+      <workItem from="1734076758358" duration="1604000" />
+      <workItem from="1734099247685" duration="1236000" />
+      <workItem from="1734159411825" duration="1505000" />
+      <workItem from="1734266352238" duration="589000" />
+      <workItem from="1734270923773" duration="592000" />
+      <workItem from="1734360688164" duration="963000" />
+      <workItem from="1734408758650" duration="640000" />
+      <workItem from="1734447080843" duration="373000" />
+      <workItem from="1734455393418" duration="1087000" />
+      <workItem from="1734578680721" duration="3210000" />
+      <workItem from="1734667351603" duration="3765000" />
+      <workItem from="1734759062947" duration="597000" />
+      <workItem from="1735147565288" duration="1362000" />
+      <workItem from="1735184874019" duration="2147000" />
+      <workItem from="1735205878397" duration="1534000" />
+      <workItem from="1735367788999" duration="3003000" />
+      <workItem from="1735483061434" duration="3179000" />
+      <workItem from="1735531386228" duration="434000" />
+      <workItem from="1735618348446" duration="4240000" />
+      <workItem from="1736060748791" duration="612000" />
+      <workItem from="1738382887928" duration="594000" />
+      <workItem from="1752208581741" duration="661000" />
+      <workItem from="1752721412280" duration="1870000" />
+      <workItem from="1752993415824" duration="1908000" />
+      <workItem from="1753328619040" duration="3441000" />
+      <workItem from="1753892044798" duration="22000" />
+      <workItem from="1753892199725" duration="620000" />
+      <workItem from="1754713206153" duration="3772000" />
+      <workItem from="1756288494160" duration="3225000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/eureka_service$EurekaServiceApplication.ic" NAME="EurekaServiceApplication Coverage Results" MODIFIED="1667309922624" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="idea" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+  </component>
+</project>

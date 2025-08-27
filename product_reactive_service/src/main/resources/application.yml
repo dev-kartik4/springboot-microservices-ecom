@@ -1,0 +1,114 @@
+server:
+  port: 8220
+
+spring:
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+  cloud:
+    discovery:
+      enabled: true
+    config:
+      uri: http://localhost:8888
+  data:
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
+  application:
+    name: product-reactive-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    topic:
+      merchant-topic: merchant-topic
+      product-topic: product-topic
+      product-notification-topic: product-notification-topic
+      inventory-topic: inventory-topic
+      offers-topic: offers-topic
+    dead-letter:
+      product-topic-dlt: product-topic-dlt
+      product-notification-dlt: product-notification-dlt
+      inventory-dlt: inventory-dlt
+      offers-dlt: offers-dlt
+    producer:
+      product:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      inventory:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      notification:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      offers:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+    consumer:
+      auto-offset-reset: earliest
+      group-id: product-consumer-group
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+      topics:
+        - merchant-topic
+        - product-topic
+        - product-topic-dlt
+        - product-notification-topic
+        - inventory-topic
+        - offers-topic
+eureka:
+  client:
+    enabled: true
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    appname: product-reactive-service
+    hostname: localhost
+    prefer-ip-address: true
+
+#management:
+#  health:
+#    circuitbreakers:
+#      enabled: true
+#  endpoints:
+#    web:
+#      exposure:
+#        include: health
+#  endpoint:
+#    health:
+#      show-details: always
+#
+#resilience4j:
+#  circuitbreaker:
+#    instances:
+#      product-service-reactive:
+#        registerHealthIndicator: true
+#        eventConsumerBufferSize: 10
+#        failureRateThreshold: 50
+#        minimumNumberOfCalls: 5
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#        waitDurationInOpenState: 5s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        slidingWindowSize: 10
+#        slidingWindowType: COUNT_BASED
+#
+#  retry:
+#    instances:
+#      product-service-reactive:
+#        registerHealthIndicator: true
+#        maxRetryAttempts: 3
+#        waitDuration: 10s
+#  ratelimiter:
+#    instances:
+#      product-service-reactive:
+#        registerHealthIndicator: false
+#        limitForPeriod: 10
+#        limitRefreshPeriod: 10s
+#        timeoutDuration: 3s

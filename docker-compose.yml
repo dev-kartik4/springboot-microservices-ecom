@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.8'
 
 services:
   zookeeper:
@@ -26,8 +26,8 @@ services:
     volumes:
       - mongo-data:/data/db
 
-  config-service:
-    container_name: config-service-reactive
+  config-reactive-service:
+    container_name: config-reactive-service
     build:
       context: .
       dockerfile: Dockerfile
@@ -40,16 +40,189 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    networks:
+      - springboot-ecom-network
 
-  customer-service-reactive:
-    container_name: customer-service-reactive
+
+  customer-reactive-service:
+    container_name: customer-reactive-service
     build:
       context: .
       dockerfile: Dockerfile
     ports:
       - "8110:8110"
     environment:
-      - SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8110/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
 
 
+  product-reactive-service:
+    container_name: product-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8220:8220"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8220/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+  inventory-reactive-service:
+    container_name: inventory-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8330:8330"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8330/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+  offers-reactive-service:
+    container_name: offers-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8440:8440"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8440/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+
+  cart-reactive-service:
+    container_name: cart-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8550:8550"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8550/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+
+  order-reactive-service:
+    container_name: order-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8660:8660"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8660/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+
+  checkout-reactive-service:
+    container_name: checkout-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8770:8770"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8770/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+  notification-reactive-service:
+    container_name: notification-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8770:8770"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8880/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+
+  merchant-reactive-service:
+    container_name: merchant-reactive-service
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8990:8990"
+    environment:
+      SPRING_CLOUD_CONFIG_URI: http://config_service_reactive:8888
+    depends_on:
+      - config-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8990/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+
+networks:
+  springboot-ecom-network:
+    external: false
+    name: springboot-ecom-network
 

@@ -1,0 +1,32 @@
+server:
+  port: 8440
+
+spring:
+  cloud:
+    config:
+      uri: http://localhost:8888
+  data:
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
+#  datasource:
+#    url: jdbc:mysql://localhost:3306/myrogdb
+#    username: root
+#    password: tiger
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+  application:
+    name: offers-reactive-service
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    hostname: localhost
+#    instance-id: ${spring.application.name}:${random.uuid}
