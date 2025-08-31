@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.annotation.DltHandler;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.kafka.annotation.RetryableTopic;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ public class CartKafkaConsumerService {
         this.cartKafkaProducerService = cartKafkaProducerService;
     }
 
-    @RetryableTopic(
+    @Retryable(
             value = { Exception.class },
             maxAttempts = 5,
             backoff = @Backoff(delay = 1000, maxDelay = 3000)
@@ -50,7 +50,7 @@ public class CartKafkaConsumerService {
             if (cartEvent.getCartMessageType().equals(CustomerEnum.CUSTOMER_REGISTERED.name())) {
                 // Call createOrUpdateCart in a non-blocking way, using subscribe to trigger the database update
                 cartService.createOrUpdateCart(cartEvent.getCartMessage())
-                        .doOnSuccess(cart -> LOGGER.info("CART CREATED SUCCESSFULLY FOR CUSTOMER ID [{}]", cart.getCustomerIdForCart()))
+                        .doOnSuccess(cart -> LOGGER.info("CART CREATED SUCCESSFULLY FOR CUSTOMER ID [{}]", cartEvent.getCustomerIdForCart()))
                         .doOnError(error -> LOGGER.error("FAILED TO CREATE CART FOR CUSTOMER ID[{}]", cartEvent.getCartMessage().getCustomerIdForCart(), error))
                         .subscribe();  // Trigger subscription to make the update happen
             } else if (cartEvent.getCartMessageType().equals(CustomerEnum.CUSTOMER_DELETED.name())) {
@@ -60,7 +60,7 @@ public class CartKafkaConsumerService {
                         .doOnError(error -> LOGGER.error("Error during cart deletion for customer ID [{}]", cartEvent.getCustomerIdForCart(), error))
                         .subscribe(); // Trigger the operation by subscribing
             } else if(cartEvent.getCartMessageType().equals(CartProductEnum.ADD_CART_PRODUCT.name())){
-                cartService.addProductToCart(cartEvent.getCustomerIdForCart(),cart);
+//                cartService.addProductToCart(cartEvent.getCustomerIdForCart(),cart);
             }
 
 

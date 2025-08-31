@@ -77,13 +77,13 @@ public class CartController {
      * @return
      * @throws CartServiceException
      */
-    @PutMapping("/customer/{customerIdForCart}/addProductToCart")
-    public Mono<ResponseMessage> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestParam("productId") String productId,@RequestBody CartProduct cartProduct) throws CartServiceException{
-
-        Mono<ResponseMessage> updatedCartWithProducts = cartService.addProductToCart(customerIdForCart,productId,cartProduct);
-
-        return updatedCartWithProducts;
-    }
+//    @PutMapping("/customer/{customerIdForCart}/addProductToCart")
+//    public Mono<ResponseMessage> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestParam("productId") String productId,@RequestBody CartProduct cartProduct) throws CartServiceException{
+//
+//        Mono<ResponseMessage> updatedCartWithProducts = cartService.addProductToCart(customerIdForCart,productId,cartProduct);
+//
+//        return updatedCartWithProducts;
+//    }
 
     /**
      * WILL BE CONTROLLED BY USER AND ADMIN BOTH

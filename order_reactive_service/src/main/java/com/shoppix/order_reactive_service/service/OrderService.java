@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.shoppix.order_reactive_service.bean.OrderRequest;
 import com.shoppix.order_reactive_service.exception.OrderServiceException;
-import com.meru.order_service_reactive.pojo.*;
 import com.shoppix.order_reactive_service.pojo.*;
 import com.shoppix.order_reactive_service.util.OrderUtil;
 import org.slf4j.Logger;

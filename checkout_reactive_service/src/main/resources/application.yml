@@ -23,6 +23,7 @@ eureka:
     enabled: true
     register-with-eureka: true
     fetch-registry: true
+    eureka-server-port: 8761
     service-url:
       defaultZone: http://localhost:8761/eureka/
   instance:
@@ -42,30 +43,30 @@ management:
     health:
       show-details: always
 
-resilience4j:
-  circuitbreaker:
-    instances:
-      productService:
-        registerHealthIndicator: true
-        eventConsumerBufferSize: 10
-        failureRateThreshold: 50
-        minimumNumberOfCalls: 5
-        automaticTransitionFromOpenToHalfOpenEnabled: true
-        waitDurationInOpenState: 5s
-        permittedNumberOfCallsInHalfOpenState: 3
-        slidingWindowSize: 10
-        slidingWindowType: COUNT_BASED
-
-  retry:
-    instances:
-      productService:
-        registerHealthIndicator: true
-        maxRetryAttempts: 3
-        waitDuration: 10s
-  ratelimiter:
-    instances:
-      productService:
-        registerHealthIndicator: false
-        limitForPeriod: 10
-        limitRefreshPeriod: 10s
-        timeoutDuration: 3s
+#resilience4j:
+#  circuitbreaker:
+#    instances:
+#      productService:
+#        registerHealthIndicator: true
+#        eventConsumerBufferSize: 10
+#        failureRateThreshold: 50
+#        minimumNumberOfCalls: 5
+#        automaticTransitionFromOpenToHalfOpenEnabled: true
+#        waitDurationInOpenState: 5s
+#        permittedNumberOfCallsInHalfOpenState: 3
+#        slidingWindowSize: 10
+#        slidingWindowType: COUNT_BASED
+#
+#  retry:
+#    instances:
+#      productService:
+#        registerHealthIndicator: true
+#        maxRetryAttempts: 3
+#        waitDuration: 10s
+#  ratelimiter:
+#    instances:
+#      productService:
+#        registerHealthIndicator: false
+#        limitForPeriod: 10
+#        limitRefreshPeriod: 10s
+#        timeoutDuration: 3s

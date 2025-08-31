@@ -1,7 +1,6 @@
 package com.shoppix.cart_reactive_service.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.shoppix.product_reactive_service.pojo.Offers;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,9 +25,9 @@ public class Product {
 	@Field(name = "PRODUCT_ID")
 	@JsonIgnore
 	private long productId;
-
+/*
 	@Field(name = "PRODUCT_SKUs")
-	private List<SKU> skuList = new ArrayList<>();
+	private List<SKU> skuList = new ArrayList<>();*/
 
 	@Field(name = "PRODUCT_SERIAL_NUMBER")
 	@JsonIgnore
@@ -51,13 +50,13 @@ public class Product {
 	@Field(name = "PRODUCT_IMAGES")
 	private List<String> productImages;
 
-	@Field(name = "OFFERS_AVAILABLE")
+/*	@Field(name = "OFFERS_AVAILABLE")
 	private List<Offers> offersAvailable;
 
 	@Field(name = "RATINGS_AND_REVIEWS")
 	private List<RatingsAndReviews> ratingsAndReviews;
 
 	@Field(name = "MERCHANT_DETAILS")
-	private MerchantDetails merchantDetails;
+	private MerchantDetails merchantDetails;*/
 
 }

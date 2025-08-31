@@ -8,7 +8,7 @@
 		<version>3.1.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.meru</groupId>
+	<groupId>com.shoppix</groupId>
 	<artifactId>checkout_reactive_service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>checkout_reactive_service</name>
@@ -31,6 +31,10 @@
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-gateway</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -85,12 +89,10 @@
 			<artifactId>springfox-swagger-ui</artifactId>
 			<version>2.6.1</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
-<!--		<dependency>-->
-<!--			<groupId>org.apache.httpcomponents</groupId>-->
-<!--			<artifactId>httpclient</artifactId>-->
-<!--			<version>4.5.13</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

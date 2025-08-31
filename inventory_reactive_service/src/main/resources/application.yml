@@ -71,7 +71,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      productService:
+      inventory-reactive-service:
         registerHealthIndicator: true
         eventConsumerBufferSize: 10
         failureRateThreshold: 50
@@ -84,13 +84,13 @@ resilience4j:
 
   retry:
     instances:
-      productService:
+      inventory-reactive-service:
         registerHealthIndicator: true
         maxRetryAttempts: 3
         waitDuration: 10s
   ratelimiter:
     instances:
-      productService:
+      inventory-reactive-service:
         registerHealthIndicator: false
         limitForPeriod: 10
         limitRefreshPeriod: 10s

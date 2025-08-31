@@ -8,7 +8,7 @@ xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/x
         <version>3.1.4</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
-    <groupId>com.meru</groupId>
+    <groupId>com.shoppix</groupId>
     <artifactId>customer_reactive_service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>customer_reactive_service</name>

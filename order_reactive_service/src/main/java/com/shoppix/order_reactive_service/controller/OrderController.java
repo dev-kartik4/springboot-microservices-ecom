@@ -144,6 +144,12 @@ public class OrderController {
 		}
 	}
 
+	@GetMapping("/runningStatus")
+	public ResponseEntity<String> checkServiceStatus(){
+
+		return new ResponseEntity("Service is Up and Running",HttpStatus.OK);
+	}
+
 	public ResponseEntity<?> orderFallback(Exception e){
 		return new ResponseEntity("ERROR, WE ARE UNABLE TO COMMUNICATE WITH ORDER SERVICE",HttpStatus.INTERNAL_SERVER_ERROR);
 	}
