@@ -1,5 +1,6 @@
 server:
   port: 8660
+  address: 0.0.0.0
 
 spring:
   application:
