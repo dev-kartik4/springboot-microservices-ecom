@@ -5,12 +5,31 @@ spring:
   application:
     name: config-reactive-service
   cloud:
+    discovery:
+      enabled: true
     config:
+      uri: http://config-reactive-service:8888
       server:
         git:
           uri: https://github.com/dev-kartik4/springboot-microservices-ecom
           clone-on-start: true
-          username: dev-kartik4
-          password: kPHONENUMBER@04
         default-label: main
 
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://eureka-reactive-service:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always

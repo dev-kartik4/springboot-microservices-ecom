@@ -2,19 +2,22 @@ server:
   port: 8660
 
 spring:
+  application:
+    name: order-reactive-service
+
   cloud:
     discovery:
       enabled: true
     config:
       uri: http://localhost:8888
+      # enabled: false   # uncomment if config server is not running
+
   data:
     mongodb:
       uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
       database: ecom-reactive-app
-  application:
-    name: order-reactive-service
+
   main:
-    web-application-type: reactive
     allow-circular-references: true
     allow-bean-definition-overriding: true
 
@@ -26,15 +29,10 @@ eureka:
     service-url:
       defaultZone: http://localhost:8761/eureka/
   instance:
-    appname: order-reactive-service
-    hostname: localhost
     prefer-ip-address: true
-
+    instance-id: ${spring.application.name}:${random.value}
 
 management:
-  health:
-    circuitbreakers:
-      enabled: true
   endpoints:
     web:
       exposure:

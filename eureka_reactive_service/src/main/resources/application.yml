@@ -5,10 +5,22 @@ eureka:
   client:
     register-with-eureka: false
     fetch-registry: false
+    eureka-service-url-poll-interval-seconds: 30
+    registry-fetch-interval-seconds: 30
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka-reactive-service:8761/eureka/
   server:
-    defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
     wait-time-in-ms-when-sync-empty: 0
   instance:
     hostname: eureka-reactive-service
+    lease-renewal-interval-in-seconds: 30
+    lease-expiration-duration-in-seconds: 90
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    eureka:
+      enabled: true
