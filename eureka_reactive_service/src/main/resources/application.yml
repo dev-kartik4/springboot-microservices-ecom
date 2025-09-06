@@ -1,6 +1,14 @@
 server:
   port: 8761
-  
+
+spring:
+  application:
+    name: eureka-reactive-service
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+
 eureka:
   client:
     register-with-eureka: false
@@ -12,15 +20,23 @@ eureka:
   server:
     wait-time-in-ms-when-sync-empty: 0
   instance:
+    app-name: eureka-reactive-service
     hostname: eureka-reactive-service
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
     lease-renewal-interval-in-seconds: 30
     lease-expiration-duration-in-seconds: 90
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
   health:
     eureka:
       enabled: true
+    circuitbreaker:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always

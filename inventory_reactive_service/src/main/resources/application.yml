@@ -2,21 +2,21 @@ server:
   port: 8330
 
 spring:
-  cloud:
-    discovery:
-      enabled: true
-    config:
-      uri: http://localhost:8888
-  data:
-    mongodb:
-      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
-      database: ecom-reactive-app
   application:
     name: inventory-reactive-service
   main:
     web-application-type: reactive
     allow-circular-references: true
     allow-bean-definition-overriding: true
+  cloud:
+    discovery:
+      enabled: true
+    config:
+      uri: http://config-reactive-service:8888
+  data:
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
   kafka:
     bootstrap-servers: localhost:9092
     topic:
@@ -44,26 +44,34 @@ spring:
         - product-notification-topic
         - inventory-topic
         - payment-topic
+    retry:
+      max-attempts: 3
+      backoff:
+        interval: 1000
+        multiplier: 2
+        max-interval: 5000
+
 eureka:
   client:
     enabled: true
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-reactive-service:8761/eureka/
   instance:
-    appname: inventory-reactive-service
-    hostname: localhost
+    app-name: inventory-reactive-service
+    hostname: inventory-reactive-service
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
 
 management:
   health:
-    circuitbreakers:
+    circuitbreaker:
       enabled: true
   endpoints:
     web:
       exposure:
-        include: health
+        include: "*"
   endpoint:
     health:
       show-details: always

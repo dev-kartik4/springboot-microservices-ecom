@@ -2,15 +2,21 @@ server:
   port: 8880
 
 spring:
-  cloud:
-    discovery:
-      enabled: true
   application:
     name: notification-reactive-service
   main:
     web-application-type: reactive
     allow-circular-references: true
     allow-bean-definition-overriding: true
+  cloud:
+    discovery:
+      enabled: true
+    config:
+      uri: http://config-reactive-service:8888
+  data:
+    mongodb:
+      uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
+      database: ecom-reactive-app
   kafka:
     bootstrap-servers: localhost:9092
     topic:
@@ -41,6 +47,12 @@ spring:
           json:
             trusted:
               packages: "*"
+    retry:
+      max-attempts: 3
+      backoff:
+        interval: 1000
+        multiplier: 2
+        max-interval: 5000
   mail:
     default-encoding: UTF-8
     host: smtp.gmail.com
@@ -62,8 +74,51 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-reactive-service:8761/eureka/
   instance:
-    appname: notification-reactive-service
-    hostname: localhost
+    app-name: notification-reactive-service
+    hostname: notification-reactive-service
     prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+
+management:
+  health:
+    circuitbreaker:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      customer-reactive-service:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    instances:
+      customer-reactive-service:
+        registerHealthIndicator: true
+        maxRetryAttempts: 3
+        waitDuration: 10s
+
+  ratelimiter:
+    instances:
+      customer-reactive-service:
+        registerHealthIndicator: false
+        limitForPeriod: 10
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s

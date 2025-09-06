@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: config-reactive-service
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
   cloud:
     discovery:
       enabled: true
@@ -22,14 +26,48 @@ eureka:
     service-url:
       defaultZone: http://eureka-reactive-service:8761/eureka/
   instance:
+    app-name: config-reactive-service
+    hostname: config-reactive-service
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
 
 management:
+  health:
+    circuitbreaker:
+      enabled: true
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: "*"
   endpoint:
     health:
       show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      config-reactive-service:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  retry:
+    instances:
+      config-reactive-service:
+        registerHealthIndicator: true
+        maxRetryAttempts: 3
+        waitDuration: 10s
+
+  ratelimiter:
+    instances:
+      config-reactive-service:
+        registerHealthIndicator: false
+        limitForPeriod: 10
+        limitRefreshPeriod: 10s
+        timeoutDuration: 3s
