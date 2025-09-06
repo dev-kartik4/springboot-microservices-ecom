@@ -37,7 +37,7 @@ services:
     environment:
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://eureka-reactive-service:8888/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -54,8 +54,10 @@ services:
       - "8888:8888"
     environment:
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom
+    depends_on:
+      - eureka-reactive-service
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://config-reactive-service:8888/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -74,6 +76,7 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8110/actuator/health" ]
       interval: 30s
@@ -94,8 +97,9 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8220/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://product-reactive-service:8220/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -113,8 +117,9 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8330/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://inventory-reactive-service:8330/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -132,8 +137,9 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8440/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://offers-reactive-service:8440/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -152,8 +158,9 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8550/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://cart-reactive-service:8550/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -172,8 +179,9 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8660/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://order-reactive-service:8660/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -192,8 +200,9 @@ services:
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
+      - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8770/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://checkout-reactive-service:8770/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
