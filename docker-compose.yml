@@ -35,9 +35,10 @@ services:
     ports:
       - "8761:8761"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://eureka-reactive-service:8888/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://eureka-reactive-service:8761/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
