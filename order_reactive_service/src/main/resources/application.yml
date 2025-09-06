@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: order-reactive-service
+  main:
+    web-application-type: reactive
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
 
   cloud:
     discovery:
@@ -15,10 +19,6 @@ spring:
     mongodb:
       uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
       database: ecom-reactive-app
-
-  main:
-    allow-circular-references: true
-    allow-bean-definition-overriding: true
 
 eureka:
   client:
@@ -35,7 +35,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: "*"
   endpoint:
     health:
       show-details: always

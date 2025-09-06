@@ -54,6 +54,7 @@ services:
     ports:
       - "8888:8888"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom
     depends_on:
       - eureka-reactive-service
@@ -74,12 +75,13 @@ services:
     ports:
       - "8110:8110"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
       - eureka-reactive-service
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8110/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://customer-reactive-service:8110/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -95,6 +97,7 @@ services:
     ports:
       - "8220:8220"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
@@ -115,6 +118,7 @@ services:
     ports:
       - "8330:8330"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
@@ -135,6 +139,7 @@ services:
     ports:
       - "8440:8440"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
@@ -156,6 +161,7 @@ services:
     ports:
       - "8550:8550"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
@@ -177,6 +183,7 @@ services:
     ports:
       - "8660:8660"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
@@ -198,6 +205,7 @@ services:
     ports:
       - "8770:8770"
     environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
       SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
     depends_on:
       - config-reactive-service
@@ -210,44 +218,48 @@ services:
     networks:
       - springboot-ecom-network
 
-#  notification-reactive-service:
-#    container_name: notification-reactive-service
-#    build:
-#      context: ./notification_reactive_service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8880:8880"
-#    environment:
-#      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
-#    depends_on:
-#      - config-reactive-service
-#    healthcheck:
-#      test: [ "CMD", "curl", "-f", "http://localhost:8880/actuator/health" ]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
-#    networks:
-#      - springboot-ecom-network
-#
-#
-#  merchant-reactive-service:
-#    container_name: merchant-reactive-service
-#    build:
-#      context: ./merchant_reactive_service
-#      dockerfile: Dockerfile
-#    ports:
-#      - "8990:8990"
-#    environment:
-#      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
-#    depends_on:
-#      - config-reactive-service
-#    healthcheck:
-#      test: [ "CMD", "curl", "-f", "http://localhost:8990/actuator/health" ]
-#      interval: 30s
-#      timeout: 10s
-#      retries: 5
-#    networks:
-#      - springboot-ecom-network
+  notification-reactive-service:
+    container_name: notification-reactive-service
+    build:
+      context: ./notification_reactive_service
+      dockerfile: Dockerfile
+    ports:
+      - "8880:8880"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
+    depends_on:
+      - config-reactive-service
+      - eureka-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://notification-reactive-service:8880/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+
+
+  merchant-reactive-service:
+    container_name: merchant-reactive-service
+    build:
+      context: ./merchant_reactive_service
+      dockerfile: Dockerfile
+    ports:
+      - "8990:8990"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
+      SPRING_CLOUD_CONFIG_URI: http://config-reactive-service:8888
+    depends_on:
+      - config-reactive-service
+      - eureka-reactive-service
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://merchant-reactive-service:8990/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
 
 
 networks:

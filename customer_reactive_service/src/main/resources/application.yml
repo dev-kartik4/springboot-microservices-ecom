@@ -13,10 +13,9 @@ spring:
     discovery:
       enabled: true
     config:
-      uri: http://localhost:8888
+      uri: http://config-reactive-service:8888
+
   data:
-    rest:
-      base-path: http://localhost:8999/customer
     mongodb:
       uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
       database: ecom-reactive-app
@@ -82,7 +81,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: "*"
   endpoint:
     health:
       show-details: always
