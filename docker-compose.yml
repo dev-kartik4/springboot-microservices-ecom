@@ -4,6 +4,8 @@ services:
     container_name: zookeeper
     ports:
       - "2181:2181"
+    networks:
+      - springboot-ecom-network
 
   kafka:
     image: wurstmeister/kafka
@@ -15,6 +17,8 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     depends_on:
       - zookeeper
+    networks:
+      - springboot-ecom-network
 
   mongodb:
     image: mongo:7.0
@@ -25,7 +29,10 @@ services:
       SPRING_DATA_MONGODB_URI: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
       MONGO_INITDB_ROOT_USERNAME: kartiktelikicherla@outlook.com 
       MONGO_INITDB_ROOT_PASSWORD: kPHONENUMBER@04
-
+    depends_on:
+      - kafka
+    networks:
+      - springboot-ecom-network
 
   eureka-reactive-service:
     container_name: eureka-reactive-service
