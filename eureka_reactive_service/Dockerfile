@@ -8,7 +8,7 @@ RUN mvn -q -DskipTests package
 # Stage 2 - runtime
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-EXPOSE 8888
+EXPOSE 8761
 LABEL maintainer="kartikcodes.dev"
 
 COPY --from=builder /app/target/*.jar app.jar
