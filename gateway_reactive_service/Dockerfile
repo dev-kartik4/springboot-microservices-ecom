@@ -1,4 +1,13 @@
-FROM openjdk:11
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn -q -DskipTests package
+
+FROM eclipse-temurin:17-jre
+WORKDIR /app
 EXPOSE 8999
-ADD target/springboot-ecom-gatewayservice.jar springboot-ecom-gatewayservice.jar
-ENTRYPOINT ["java","-jar","springboot-ecom-gatewayservice.jar"]
+LABEL maintainer="kartikcodes.dev"
+
+COPY --from=builder /app/target/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]

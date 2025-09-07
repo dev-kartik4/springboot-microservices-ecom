@@ -20,7 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/v1/products")
 @Slf4j
 public class ProductController {
 	

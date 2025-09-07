@@ -16,11 +16,11 @@ import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 
 @Service
-public class PaymentCheckoutService  {
+public class CheckoutService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentCheckoutService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CheckoutService.class);
 
-    public static final String PRODUCT_SERVICE_URL = "http://product-service/products";
+    public static final String PRODUCT_SERVICE_URL = "http://product-reactive-service/api/v1/products";
 
     @Autowired
     public WebClient.Builder webClientBuilder;

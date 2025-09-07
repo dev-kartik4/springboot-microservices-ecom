@@ -39,13 +39,13 @@ public class OrderService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(OrderService.class);
 
-	public static final String CUSTOMER_SERVICE_URL = "http://customer-service/customer";
+	public static final String CUSTOMER_SERVICE_URL = "http://customer-reactive-service/api/v1/customer";
 
-	public static final String INVENTORY_SERVICE_URL = "http://inventory-service/inventory";
+	public static final String INVENTORY_SERVICE_URL = "http://inventory-reactive-service/api/v1/inventory";
 
-	public static final String PRODUCT_SERVICE_URL = "http://product-service/products";
+	public static final String PRODUCT_SERVICE_URL = "http://product-reactive-service/api/v1/products";
 
-	public static final String CHECKOUT_SERVICE_URL = "http://checkout-service/checkout";
+	public static final String CHECKOUT_SERVICE_URL = "http://checkout-reactive-service/api/v1/checkout";
 
 	/**
 	 * WILL BE CONTROLLED BY USER AND ADMIN BOTH

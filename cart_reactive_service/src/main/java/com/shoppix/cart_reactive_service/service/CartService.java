@@ -39,7 +39,7 @@ public class CartService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(CartService.class);
 
-	public static final String PRODUCT_SERVICE_URL = "http://product-service/products";
+	public static final String PRODUCT_SERVICE_URL = "http://product-reactive-service/api/v1/products";
 
     @Autowired
     private CartKafkaProducerService cartKafkaProducerService;

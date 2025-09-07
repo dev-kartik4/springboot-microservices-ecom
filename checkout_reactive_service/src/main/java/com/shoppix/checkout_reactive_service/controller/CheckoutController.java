@@ -4,7 +4,7 @@ import com.shoppix.checkout_reactive_service.entity.PaymentCheckout;
 import com.shoppix.checkout_reactive_service.exception.CheckoutServiceException;
 import com.shoppix.checkout_reactive_service.model.FinalPrintableInvoice;
 import com.shoppix.checkout_reactive_service.model.OrderRequest;
-import com.shoppix.checkout_reactive_service.service.PaymentCheckoutService;
+import com.shoppix.checkout_reactive_service.service.CheckoutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,18 +19,18 @@ import java.time.Duration;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/checkout")
-public class PaymentCheckoutController {
+@RequestMapping("/api/v1/checkout")
+public class CheckoutController {
 
     @Autowired
-    private PaymentCheckoutService paymentCheckoutService;
+    private CheckoutService checkoutService;
 
     @Autowired
     public WebClient.Builder webClientBuilder;
 
-    public static final String ORDER_SERVICE_URL = "http://order-service/orders";
+    public static final String ORDER_SERVICE_URL = "http://order-reactive-service/api/v1/orders";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PaymentCheckoutController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CheckoutController.class);
 
     /**
      * WILL BE CONTROLLED BY USER AND ADMIN BOTH
@@ -52,7 +52,7 @@ public class PaymentCheckoutController {
             paymentCheckout.setPaymentOptionSelected(orderRequest.getPaymentModeSelected());
             LOGGER.info("MY ORDER REQUEST ["+orderRequest.toString()+"]");
             LOGGER.info("GOOD LUCK ! PROCEEDED FOR PAYMENT CHECKOUT PAGE");
-            Mono<OrderRequest> myOrderRequest = paymentCheckoutService.getUserOptionForPayments(paymentCheckout);
+            Mono<OrderRequest> myOrderRequest = checkoutService.getUserOptionForPayments(paymentCheckout);
             LOGGER.info("MY ORDER RESPONSE ["+myOrderRequest.toString()+"]");
             LOGGER.info("PAYMENT DONE ! PROCESSING YOUR ORDER");
             webClientBuilder.build()

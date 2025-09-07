@@ -14,7 +14,7 @@ import reactor.core.publisher.Mono;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/merchant")
+@RequestMapping("/api/v1/merchant")
 @Slf4j
 public class MerchantController {
 

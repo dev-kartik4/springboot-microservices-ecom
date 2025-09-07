@@ -20,7 +20,7 @@ import reactor.core.publisher.Mono;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/v1/orders")
 @Slf4j
 public class OrderController {
 
@@ -30,7 +30,7 @@ public class OrderController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(OrderController.class);
 
 	private static final String ORDER_SERVICE = "orderService";
-	public static final String ORDER_SERVICE_URL = "http://order-service/order";
+	public static final String ORDER_SERVICE_URL = "http://order-reactive-service/api/v1/orders";
 	/**
 	 * WILL BE CONTROLLED BY USER AND ADMIN BOTH
 	 * <p>

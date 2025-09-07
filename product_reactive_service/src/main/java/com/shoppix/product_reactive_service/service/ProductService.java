@@ -63,9 +63,9 @@ public class ProductService{
 
 	private final ObjectMapper objectMapper;
 
-	public static final String INVENTORY_SERVICE_URL = "http://inventory-service/inventory";
+	public static final String INVENTORY_SERVICE_URL = "http://inventory-reactive-service/api/v1/inventory";
 
-	public static final String OFFERS_SERVICE_URL = "http://offers-service/offers";
+	public static final String OFFERS_SERVICE_URL = "http://offers-reactive-service/api/v1/offers";
 
 	/**
 	 *

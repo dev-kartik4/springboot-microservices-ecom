@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/promotions")
+@RequestMapping("/api/v1/offers")
 public class OfferController {
 
     @Autowired

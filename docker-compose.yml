@@ -52,7 +52,24 @@ services:
     networks:
       - springboot-ecom-network
 
-
+  gateway-reactive-service:
+    container_name: gateway-reactive-service
+    build:
+      context: ./gateway_reactive_service
+      dockerfile: Dockerfile
+    ports:
+      - "8999:8999"
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-reactive-service:8761/eureka/
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: https://github.com/dev-kartik4/springboot-microservices-ecom
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://gateway-reactive-service:8999/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - springboot-ecom-network
+      
   config-reactive-service:
     container_name: config-reactive-service
     build:

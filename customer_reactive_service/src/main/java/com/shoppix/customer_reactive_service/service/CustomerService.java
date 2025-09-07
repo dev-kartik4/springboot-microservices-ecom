@@ -63,7 +63,7 @@ public class CustomerService {
 
     private final ObjectMapper objectMapper;
 
-    public static final String CART_SERVICE_URL = "http://cart-service/cart";
+    public static final String CART_SERVICE_URL = "http://cart-reactive-service/api/v1/cart";
 
     @Autowired
     public CustomerService(ObjectMapper objectMapper) {

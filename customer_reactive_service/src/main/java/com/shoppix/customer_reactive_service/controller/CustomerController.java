@@ -24,7 +24,7 @@ import java.time.Duration;
 
 @CrossOrigin("*")
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/api/v1/customer")
 @Slf4j
 public class CustomerController {
     @Autowired
@@ -38,9 +38,9 @@ public class CustomerController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CustomerController.class);
 
-    public static final String CART_SERVICE_URL = "http://cart-service/cart";
+    public static final String CART_SERVICE_URL = "http://cart-reactive-service/api/v1/cart";
 
-    public static final String CHECKOUT_SERVICE_URL = "http://checkout-service/checkout";
+    public static final String CHECKOUT_SERVICE_URL = "http://checkout-reactive-service/api/v1/checkout";
 
     /**
      * WILL BE CONTROLLED BY USER AND ADMIN

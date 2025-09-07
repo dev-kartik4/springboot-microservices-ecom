@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/fallbackerror")
 public class GatewayController {
 
+    @GetMapping("/identify")
+    public String identifyFallback() { return "HEY BUDDY ! WILL SEND YOU IN SOONER"; }
+
     @GetMapping("/customer")
     public String customerFallback() { return "UH OH ! WE ARE CURRENTLY FACING DOWNTIME, PLEASE COMEBACK LATER "; }
 
@@ -27,11 +30,17 @@ public class GatewayController {
         return "UH OH ! INVENTORY/STOCK SERVICE IS DOWN FOR NOW";
     }
 
-    @GetMapping("/promotions")
+    @GetMapping("/offers")
     public String promotionFallback(){
         return "PROMOTIONAL OFFER DETAILS CANT'T BE FETCHED RIGHT NOW";
     }
 
     @GetMapping("/checkout")
     public String checkoutFallback() { return "DON'T PANIC ! PLEASE COMEBACK LATER AND CHECKOUT YOUR ORDER REQUEST"; }
+
+    @GetMapping("/merchant")
+    public String merchantFallback() { return "DON'T PANIC ! YOU CAN CONTINUE ADDING PRODUCTS LATER"; }
+
+    @GetMapping("/notification")
+    public String notificationFallback() { return "OOPS, DOWNTIME! WILL TRIGGER PENDING NOTIFICATIONS SOON"; }
 }
