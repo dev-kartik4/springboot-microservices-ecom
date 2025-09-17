@@ -5,7 +5,7 @@ spring:
   application:
     name: eureka-reactive-service
   main:
-    web-application-type: reactive
+#    web-application-type: reactive
     allow-circular-references: true
     allow-bean-definition-overriding: true
 
@@ -16,12 +16,12 @@ eureka:
     eureka-service-url-poll-interval-seconds: 30
     registry-fetch-interval-seconds: 30
     service-url:
-      defaultZone: http://eureka-reactive-service:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
   server:
     wait-time-in-ms-when-sync-empty: 0
   instance:
     app-name: eureka-reactive-service
-    hostname: eureka-reactive-service
+    hostname: localhost
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
     lease-renewal-interval-in-seconds: 30
