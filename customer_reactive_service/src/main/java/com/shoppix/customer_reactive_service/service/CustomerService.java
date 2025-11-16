@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -189,7 +188,7 @@ public class CustomerService {
                 .doOnSuccess(responseMessage ->  LOGGER.info("CUSTOMER DETAILS FETCHED SUCCESSFULLY"))
                 .switchIfEmpty(Mono.defer(() -> buildResponse(404,"CUSTOMER WITH ID " + customerId + " DOES NOT EXIST", LocalDateTime.now().toString(),null,new ArrayList<>(),"/customer/getCustomerById/" + customerId)))
                 .doOnError(e -> LOGGER.error("ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + customerId + "]"))
-                .onErrorResume(e -> buildResponse(500,"ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + customerId + "]", LocalDateTime.now().toString(),null,List.of(e.getMessage()),"/customer/getCustomerById/" + customerId))
+                .onErrorResume(e -> buildResponse(500,"ERROR FETCHING CUSTOMER DETAILS WITH CUSTOMER ID [" + customerId + "]", LocalDateTime.now().toString(),null,List.of(e.getMessage()),"/customer/getCustomerById/" + customerId));
     }
 
     /**
@@ -208,7 +207,7 @@ public class CustomerService {
         return customerMono
                 .publishOn(Schedulers.parallel())
                 .log("FETCHING CUSTOMERS WITH EMAIL ID [" + emailId + "]...")
-                .flatMap(customer -> buildResponse(200,"CUSTOMER WITH EMAIL ID [" + emailId + "] FOUND",LocalDateTime.now().toString(),customer,new ArrayList<>(),"/customer/getCustomerByEmail/" + emailId)
+                .flatMap(customer -> buildResponse(200,"CUSTOMER WITH EMAIL ID [" + emailId + "] FOUND",LocalDateTime.now().toString(),customer,new ArrayList<>(),"/customer/getCustomerByEmail/" + emailId))
                 .doOnSuccess(responseMessage ->  LOGGER.info("CUSTOMER DETAILS FETCHED SUCCESSFULLY"))
                 .switchIfEmpty(Mono.defer(() -> buildResponse(404,"OOPS ! CUSTOMER WITH EMAIL ID [" + emailId + "] DOES NOT EXIST",LocalDateTime.now().toString(),null,new ArrayList<>(),"/customer/getCustomerByEmail/" + emailId)))
                 .doOnError(e -> LOGGER.error("ERROR FETCHING CUSTOMER DETAILS WITH EMAIL ID [" + emailId + "]",e))
