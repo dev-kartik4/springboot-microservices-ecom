@@ -78,16 +78,15 @@ public class CustomerService {
      * @throws CustomerServiceException
      */
     public Mono<ResponseMessage> createOrUpdateCustomer(Customer customer) {
-        LOGGER.info("FETCHING CUSTOMER EXISTENCE...");
 
         return customerRepo.findByEmailId(customer.getEmailId())
+                .log("FETCHING CUSTOMER EXISTENCE...")
                 .flatMap(existingCustomer -> updateExistingCustomer(existingCustomer, customer))
                 .switchIfEmpty(createNewCustomer(customer));
     }
 
 
     private Mono<ResponseMessage> createNewCustomer(Customer customerRequest) {
-        LOGGER.info("CUSTOMER REGISTRATION IN PROGRESS");
 
         Customer newCustomer = prepareCustomer(customerRequest);
 
@@ -95,7 +94,9 @@ public class CustomerService {
         cart.setCustomerIdForCart(newCustomer.getCustomerId());
         cart.setCartProducts(new ArrayList<>());
 
-        return customerRepo.insert(newCustomer)
+        return customerRepo
+                .insert(newCustomer)
+                .log("INITIALIZING WITH NEW CUSTOMER REGISTRATION PROCESS")
                 .subscribeOn(Schedulers.parallel())
                 .flatMap(savedCustomer -> buildResponse(200,"CUSTOMER REGISTERED ["+newCustomer.getEmailId()+"]",LocalDateTime.now().toString(),savedCustomer,new ArrayList<>(),"/customer/createOrUpdateCustomer"))
                 .doOnSuccess(savedCustomer -> {
@@ -134,7 +135,6 @@ public class CustomerService {
         return newCustomer;
     }
     private Mono<ResponseMessage> updateExistingCustomer(Customer existingCustomer, Customer updatedCustomer) {
-        LOGGER.info("UPDATING EXISTING CUSTOMER...");
 
         existingCustomer.setCustomerName(updatedCustomer.getCustomerName());
         existingCustomer.setEmailId(updatedCustomer.getEmailId());
@@ -147,7 +147,7 @@ public class CustomerService {
         existingCustomer.setAccountExistence(true);
 
         return customerRepo.save(existingCustomer)
-                .log("UPDATING... CUSTOMER DATA IN PROGRESS")
+                .log("UPDATING... EXISTING CUSTOMER DATA IN PROGRESS")
                 .flatMap(savedCustomer -> buildResponse(200,"CUSTOMER UPDATED SUCCESSFULLY",LocalDateTime.now().toString(),savedCustomer,new ArrayList<>(),"/customer/createOrUpdateCustomer"))
                 .doOnSuccess(responseMessage -> LOGGER.info("CUSTOMER UPDATED SUCCESSFULLY"))
                 .doOnError(e -> LOGGER.error("FAILED TO UPDATE CUSTOMER WITH ID ["+existingCustomer.getCustomerId()+"]",e))
@@ -158,6 +158,7 @@ public class CustomerService {
 
         Mono<Customer> existingCustomerData = customerRepo.findByEmailId(emailId);
         return existingCustomerData
+                .log("ADDING NEW ADDRESS FOR CUSTOMER")
                 .publishOn(Schedulers.parallel())
                 .flatMap(existingCustomer -> {
                     existingCustomer.getAddress().add(address);
@@ -224,14 +225,16 @@ public class CustomerService {
      * @throws CustomerServiceException
      */
     public Mono<ResponseMessage> getDefaultAddressSelectedByCustomerEmailId(String emailId) {
-        LOGGER.info("SERVICE ADDRESS - FETCHING CUSTOMER ADDRESS");
+        LOGGER.info("FETCHING ADDRESS DETAILS BY CUSTOMER EMAIL [ "+emailId+" ]");
 
         Mono<Customer> customerDetails = customerRepo.findByEmailId(emailId);
 
-        Mono<Customer> customerFinalInfo = customerDetails.map(customer -> {
-            customer.setAddress(customer.getAddress().stream()
-                    .filter(Address::isDefaultAddress)
-                    .collect(Collectors.toList()));
+        Mono<Customer> customerFinalInfo = customerDetails
+                .log("FILTERING DEFAULT ADDRESS..")
+                .map(customer -> {
+                    customer.setAddress(customer.getAddress().stream()
+                            .filter(Address::isDefaultAddress)
+                            .collect(Collectors.toList()));
             return customer;
         });
 
@@ -275,33 +278,15 @@ public class CustomerService {
      * @throws CustomerServiceException
      */
     public Mono<ResponseMessage> deleteCustomerById(int customerId) {
-        LOGGER.info("IN PROCESS OF DELETING PROFILE WITH CUSTOMER ID [" + customerId + "]");
 
         return sendNotificationToCustomer(CustomerEnum.CUSTOMER_DELETED.name(), customerId)
+                .log("IN PROCESS OF DELETING PROFILE WITH CUSTOMER ID ["+customerId+"]")
                 .then(customerRepo.deleteById(customerId))
                 .then(deleteCartWhenCustomerIsDeleted(customerId))
                 .then(Mono.just(true))
-                .flatMap(deletionSuccess -> {
-                    return Mono.just(ResponseMessage.builder()
-                            .statusCode(200)
-                            .message("Customer profile and associated cart deleted successfully.")
-                            .timestamp(LocalDateTime.now().toString())
-                            .responseData(true) // No data to return
-                            .errorDetails(null)
-                            .path("/customer/deleteCustomerById")
-                            .build());
-                })
-                .onErrorResume(e -> {
-                    LOGGER.error("Error during customer deletion process", e);
-                    return Mono.just(ResponseMessage.builder()
-                            .statusCode(500)
-                            .message("Error during customer deletion process")
-                            .timestamp(LocalDateTime.now().toString())
-                            .responseData(false)
-                            .errorDetails(List.of(e.getMessage()))
-                            .path("/customer/deleteCustomerById")
-                            .build());
-                });
+                .flatMap(deletionSuccess -> buildResponse(200,"CUSTOMER PROFILE AND ASSOCIATED CART DELETED SUCCESSFULLY",LocalDateTime.now().toString(),true,new ArrayList<>(),"/customer/deleteCustomerById/" + customerId))
+                .doOnError(e -> LOGGER.error("ERROR DURING DELETING CUSTOMER",e))
+                .onErrorResume(e -> buildResponse(500,"ERROR DURING CUSTOMER DELETE PROCESS FOR CUSTOMER ID ["+customerId+"]",LocalDateTime.now().toString(),false,List.of(e.getMessage()),"/customer/deleteCustomerById/" + customerId));
     }
 
     /*CUSTOMER-ORDER MICROSERVICE*/
@@ -316,56 +301,28 @@ public class CustomerService {
      */
     public Mono<ResponseMessage> getAllOrdersForCustomer(String emailId) {
 
-        LOGGER.info("FETCHING... YOUR RECENT ORDERS");
-
-        // Retrieve customer details by email
         Mono<Customer> completeCustomerInfo = customerRepo.findByEmailId(emailId);
 
         return completeCustomerInfo
                 .publishOn(Schedulers.parallel())
+                .log("FETCHING... YOUR RECENT ORDERS")
                 .flatMap(customer -> {
                     Flux<Order> customerOrders = Flux.fromIterable(customer.getMyOrders());
 
                     return customerOrders
                             .collectList()
-                            .flatMap(orders -> {
-                                if (orders.isEmpty()) {
-                                    return Mono.just(ResponseMessage.builder()
-                                            .statusCode(404)
-                                            .message("YOU HAVEN'T ORDERED ANYTHING YET")
-                                            .timestamp(LocalDateTime.now().toString())
-                                            .responseData(null)
-                                            .errorDetails(null)
-                                            .path("/order/getAllOrdersForCustomer")
-                                            .build());
-                                }
-                                return Mono.just(ResponseMessage.builder()
-                                        .statusCode(200)
-                                        .message("Successfully fetched all orders.")
-                                        .timestamp(LocalDateTime.now().toString())
-                                        .responseData(orders)
-                                        .errorDetails(null)
-                                        .path("/order/getAllOrdersForCustomer")
-                                        .build());
-                            });
-                })
-                .onErrorResume(e -> {
-                    LOGGER.error("Error fetching orders for customer with email ID [" + emailId + "]", e);
-                    return Mono.just(ResponseMessage.builder()
-                            .statusCode(500)
-                            .message("Error fetching orders.")
-                            .timestamp(LocalDateTime.now().toString())
-                            .responseData(null)
-                            .errorDetails(List.of(e.getMessage()))
-                            .path("/order/getAllOrdersForCustomer")
-                            .build());
+                            .flatMap(orders -> buildResponse(200,"SUCCESSFULLY FETCHED ALL ORDERS FOR CUSTOMER WITH EMAIL ID ["+emailId+"]",LocalDateTime.now().toString(),orders,new ArrayList<>(),"/customer/getAllOrdersForCustomer/" + emailId))
+                            .switchIfEmpty(Mono.defer(() -> buildResponse(404,"YOU HAVEN'T ORDERED ANYTHING YET",LocalDateTime.now().toString(),null,new ArrayList<>(),"/customer/getAllOrdersForCustomer/" + emailId)))
+                            .doOnError(e -> LOGGER.error("ERROR FETCHING ORDERS FOR CUSTOMER WITH EMAIL ID ["+emailId+"]", e))
+                            .onErrorResume(e -> buildResponse(500,"ERROR FETCHING ORDERS FOR CUSTOMER WITH EMAIL ID ["+emailId+"]",LocalDateTime.now().toString(),null,List.of(e.getMessage()),"/customer/getAllOrdersForCustomer/" + emailId));
                 });
     }
 
 
     public Mono<ResponseMessage> orderNow(String productId, OrderRequest orderRequest) throws JsonProcessingException {
 
-        LOGGER.info("ORDER REQUEST STARTED FOR CUSTOMER ID [ " + orderRequest.getCustomerId() + "] CUSTOMER EMAIL ID: [ " +orderRequest.getCustomerEmailId()+" ] ");
+        LOGGER.info("ORDER REQUEST SENT FOR CUSTOMER ID [ " + orderRequest.getCustomerId() + "] CUSTOMER EMAIL ID: [ " +orderRequest.getCustomerEmailId()+" ] ");
+        LOGGER.info("WAITING AT CHECKOUT ! REQUEST WILL GET EXPIRED IF ORDER NOT PROCESSED ASAP");
 
 
         return Mono.just(new ResponseMessage());
@@ -388,33 +345,14 @@ public class CustomerService {
                 .flatMap(customer -> {
                     if (customer != null) {
                         customer.getMyOrders().add(customerOrder);
-                        return createOrUpdateCustomer(customer)
-                                .thenReturn(customer);
+                        createOrUpdateCustomer(customer).subscribe();
+                        return buildResponse(200,"ORDER LIST UPDATED SUCCESSFULLY",LocalDateTime.now().toString(),customer.getMyOrders(),new ArrayList<>(),"/order/updateOrderList");
                     } else {
-                        return Mono.error(new CustomerServiceException("Customer not found with email ID [" + customerOrder.getCustomerEmailId() + "]"));
+                        return buildResponse(404,"CUSTOMER NOT FOUND WITH EMAIL ID ["+ customerOrder.getCustomerEmailId()+"]",LocalDateTime.now().toString(),null,new ArrayList<>(),"/order/updateOrderList");
                     }
                 })
-                .flatMap(updatedCustomer -> {
-                    return Mono.just(ResponseMessage.builder()
-                            .statusCode(200)
-                            .message("Order list updated successfully.")
-                            .timestamp(LocalDateTime.now().toString())
-                            .responseData(updatedCustomer.getMyOrders())
-                            .errorDetails(null)
-                            .path("/order/updateOrderList")
-                            .build());
-                })
-                .onErrorResume(e -> {
-                    LOGGER.error("Error updating order list for customer with email ID [" + customerOrder.getCustomerEmailId() + "]", e);
-                    return Mono.just(ResponseMessage.builder()
-                            .statusCode(500)
-                            .message("Error updating order list.")
-                            .timestamp(LocalDateTime.now().toString())
-                            .responseData(null)
-                            .errorDetails(List.of(e.getMessage()))
-                            .path("/order/updateOrderList")
-                            .build());
-                });
+                .doOnError(e -> LOGGER.error("ERROR UPDATING ORDER LIST FOR CUSTOMER WITH EMAIL ID ["+customerOrder.getCustomerEmailId()+"]"))
+                .onErrorResume(e -> buildResponse(500,"ERROR UPDATING ORDER LIST FOR CUSTOMER WITH EMAIL ID ["+customerOrder.getCustomerEmailId()+"]",LocalDateTime.now().toString(),null,List.of(e.getMessage()),"/order/updateOrderList"));
     }
 
 
@@ -452,26 +390,12 @@ public class CustomerService {
 
             customerKafkaProducerService.sendMessage(cartTopicName, cartProductAsMessage);
 
-            return Mono.just(ResponseMessage.builder()
-                    .statusCode(200)
-                    .message("Product added to cart successfully.")
-                    .timestamp(LocalDateTime.now().toString())
-                    .responseData(cartProduct)
-                    .errorDetails(null)
-                    .path("/customer/"+customerIdForCart+"/addProductToCart/"+cartProduct.getProductOrVariantProductIdList())
-                    .build());
+            return buildResponse(200,"PRODUCT ADDED TO CART SUCCESSFULLY",LocalDateTime.now().toString(),cartProduct,new ArrayList<>(),"/customer/"+customerIdForCart+"/addProductToCart/"+cartProduct.getProductOrVariantProductIdList());
 
         } catch (Exception e) {
-            LOGGER.error("ERROR DURING ADDING PRODUCTS TO CART", e);
 
-            return Mono.just(ResponseMessage.builder()
-                    .statusCode(500)
-                    .message("Failed to add product to cart.")
-                    .timestamp(LocalDateTime.now().toString())
-                    .responseData(null)
-                    .errorDetails(List.of(e.getMessage()))
-                    .path("/customer/"+customerIdForCart+"/addProductToCart/"+cartProduct.getProductOrVariantProductIdList())
-                    .build());
+            LOGGER.error("ERROR DURING ADDING PRODUCTS TO CART", e);
+            return buildResponse(500,"FAILED TO ADD PRODUCT TO CART",LocalDateTime.now().toString(),cartProduct,List.of(e.getMessage()),"/customer/"+customerIdForCart+"/addProductToCart/"+cartProduct.getProductOrVariantProductIdList());
         }
     }
 

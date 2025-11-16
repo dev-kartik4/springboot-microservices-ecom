@@ -55,7 +55,6 @@ public class CustomerController {
     @ResponseBody
     public Mono<ResponseMessage> createCustomer(@RequestBody Customer customer) throws CustomerServiceException {
 
-        LOGGER.info("INITIALIZING WITH NEW CUSTOMER REGISTRATION PROCESS");
         return customerService.createOrUpdateCustomer(customer);
     }
 
@@ -74,11 +73,7 @@ public class CustomerController {
     @ResponseBody
     public Mono<ResponseMessage> addNewAddress(@PathVariable("emailId") String emailId,@RequestBody Address address) throws CustomerServiceException{
 
-        LOGGER.info("ADDING NEW ADDRESS FOR CUSTOMER");
-
-        Mono<ResponseMessage> updatedCustomerResponseMessage = customerService.addYourNewAddress(emailId,address);
-
-        return updatedCustomerResponseMessage;
+        return customerService.addYourNewAddress(emailId,address);
 
     }
 
@@ -94,9 +89,7 @@ public class CustomerController {
     @GetMapping("/getCustomerById/{customerId}")
     public Mono<ResponseMessage> getCustomerById(@PathVariable("customerId") int customerId) throws CustomerServiceException {
 
-        Mono<ResponseMessage> customerResponseMessage = customerService.getCustomerById(customerId);
-
-        return customerResponseMessage;
+        return customerService.getCustomerById(customerId);
 
     }
 
@@ -112,9 +105,7 @@ public class CustomerController {
     @GetMapping("/getCustomerByEmailId/{emailId}")
     public Mono<ResponseMessage> getCustomerByEmailId(@PathVariable("emailId") String emailId) throws CustomerServiceException {
 
-        Mono<ResponseMessage> customerResponseMessage = customerService.getCustomerByEmail(emailId);
-
-        return customerResponseMessage;
+        return customerService.getCustomerByEmail(emailId);
     }
 
     /**
@@ -128,9 +119,7 @@ public class CustomerController {
     @GetMapping("/getDefaultAddress/{emailId}")
     public Mono<ResponseMessage> getDefaultAddressSelectedByCustomerEmailId(@PathVariable("emailId") String emailId) throws CustomerServiceException {
 
-        LOGGER.info("FETCHING ADDRESS DETAILS BY CUSTOMER EMAIL [ "+emailId+" ]");
-        Mono<ResponseMessage> customerDeliveryAddress = customerService.getDefaultAddressSelectedByCustomerEmailId(emailId);
-        return customerDeliveryAddress;
+        return customerService.getDefaultAddressSelectedByCustomerEmailId(emailId);
     }
 
 
@@ -145,10 +134,7 @@ public class CustomerController {
 	@GetMapping("/getAllCustomers")
 	public Mono<ResponseMessage> getAllCustomers() throws CustomerServiceException{
 
-        LOGGER.info("FETCHING ALL CUSTOMERS INFO....");
-        Mono<ResponseMessage>  allCustomersInfo = customerService.getAllCustomers();
-
-        return allCustomersInfo;
+        return customerService.getAllCustomers();
 	}
 
 
@@ -165,10 +151,7 @@ public class CustomerController {
 	@ResponseBody
 	public Mono<ResponseMessage> updateProfileInfo(@RequestBody Customer updatedCustomerInfo) throws CustomerServiceException{
 
-        LOGGER.info("FETCHING DATA FOR EXISTING CUSTOMER");
-		Mono<ResponseMessage> updatedCustomerResponseMessage = customerService.createOrUpdateCustomer(updatedCustomerInfo);
-
-        return updatedCustomerResponseMessage;
+		return customerService.createOrUpdateCustomer(updatedCustomerInfo);
 	}
 
 	/**
