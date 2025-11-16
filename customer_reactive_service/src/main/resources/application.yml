@@ -2,6 +2,8 @@ server:
   port: 8110
 
 spring:
+  profiles:
+    active: local
   application:
     name: customer-reactive-service
   main:
@@ -12,7 +14,7 @@ spring:
     discovery:
       enabled: true
     config:
-      uri: http://config-reactive-service:8888
+      uri: http://localhost:8888
   data:
     mongodb:
       uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
@@ -66,10 +68,10 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://eureka-reactive-service:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/
   instance:
     app-name: customer-reactive-service
-    hostname: customer-reactive-service
+    hostname: localhost
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
 

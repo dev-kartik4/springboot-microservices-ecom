@@ -6,6 +6,7 @@ import com.shoppix.cart_reactive_service.enums.CartEnum;
 import com.shoppix.cart_reactive_service.enums.CartProductEnum;
 import com.shoppix.cart_reactive_service.events.CartEvent;
 import com.shoppix.cart_reactive_service.enums.CustomerEnum;
+import com.shoppix.cart_reactive_service.events.CartProductEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,8 @@ public class CartKafkaConsumerService {
     @KafkaListener(topics = "${spring.kafka.topic.cart-topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeMessage(String message) throws JsonProcessingException {
         CartEvent cartEvent = objectMapper.readValue(message, CartEvent.class);
+        CartProductEvent cartProductEvent = objectMapper.readValue(message, CartProductEvent.class);
+
         LOGGER.info("Received Message: {}", message);
         try {
 
@@ -53,14 +56,19 @@ public class CartKafkaConsumerService {
                         .doOnSuccess(cart -> LOGGER.info("CART CREATED SUCCESSFULLY FOR CUSTOMER ID [{}]", cartEvent.getCustomerIdForCart()))
                         .doOnError(error -> LOGGER.error("FAILED TO CREATE CART FOR CUSTOMER ID[{}]", cartEvent.getCartMessage().getCustomerIdForCart(), error))
                         .subscribe();  // Trigger subscription to make the update happen
-            } else if (cartEvent.getCartMessageType().equals(CustomerEnum.CUSTOMER_DELETED.name())) {
+            }
+            if (cartEvent.getCartMessageType().equals(CustomerEnum.CUSTOMER_DELETED.name())) {
                 cartService.deleteCartWhenCustomerIsDeleted(cartEvent.getCustomerIdForCart())
                         .publishOn(Schedulers.parallel()) // Parallel execution (if needed)
                         .doOnTerminate(() -> LOGGER.info("Cart deletion process completed for customer ID [{}]", cartEvent.getCustomerIdForCart()))
                         .doOnError(error -> LOGGER.error("Error during cart deletion for customer ID [{}]", cartEvent.getCustomerIdForCart(), error))
                         .subscribe(); // Trigger the operation by subscribing
-            } else if(cartEvent.getCartMessageType().equals(CartProductEnum.ADD_CART_PRODUCT.name())){
-//                cartService.addProductToCart(cartEvent.getCustomerIdForCart(),cart);
+            }
+            if(cartEvent.getCartMessageType().equals(CartProductEnum.ADD_CART_PRODUCT.name())){
+                cartService.addProductToCart(cartEvent.getCartProductEvent()).subscribe();
+            }
+            if(cartEvent.getCartMessageType().equals(CartProductEnum.REMOVE_CART_PRODUCT.name()) || cartEvent.getCartMessageType().equals(CartProductEnum.REMOVE_ALL_CART_PRODUCTS.name())){
+                cartService.removeProductsFromCart(cartEvent.getCartProductEvent()).subscribe();
             }
 
 

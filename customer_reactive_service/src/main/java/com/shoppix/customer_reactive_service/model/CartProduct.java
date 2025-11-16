@@ -1,27 +1,33 @@
 package com.shoppix.customer_reactive_service.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CartProduct {
 
-    private String productId;
+    @Id
+    private List<String> productOrVariantProductIdList;
 
     private String productName;
 
-    private String productImageToShow;
-
-    private Map<String,String> productOptions;
+    private List<String> productImagesToShow;
 
     private String stockStatus;
 
-    private double price;
+    private double listedPrice;
+
+    private double discountedPrice;
 
     private int quantity;
+
+    private double averageRating;
 }

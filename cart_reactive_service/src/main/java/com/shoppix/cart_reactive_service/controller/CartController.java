@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/api/v1/cart")
@@ -73,16 +75,14 @@ public class CartController {
      * API TO ADD PRODUCT TO CART
      *
      * @param customerIdForCart
-     * @param cartProduct
+     * @param productId
      * @return
      * @throws CartServiceException
      */
-//    @PutMapping("/customer/{customerIdForCart}/addProductToCart")
-//    public Mono<ResponseMessage> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@RequestParam("productId") String productId,@RequestBody CartProduct cartProduct) throws CartServiceException{
+//    @PutMapping("/customer/{customerIdForCart}/addProductToCart/{productId}")
+//    public Mono<ResponseMessage> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart,@PathVariable("productId") String productId) throws CartServiceException{
 //
-//        Mono<ResponseMessage> updatedCartWithProducts = cartService.addProductToCart(customerIdForCart,productId,cartProduct);
-//
-//        return updatedCartWithProducts;
+//        return cartService.addProductToCart(customerIdForCart,productId);
 //    }
 
     /**
@@ -96,8 +96,9 @@ public class CartController {
      * @throws CartServiceException
      */
 //    @DeleteMapping("/customer/{customerIdForCart}/deleteProductFromCart/{productId}")
-//    public ResponseEntity<Mono<AtomicReference<String>>> deleteProductFromCart(@PathVariable("customerIdForCart") int customerIdForCart,@PathVariable("productId") int productId) throws CartServiceException{
-//        Mono<AtomicReference<String>> deletedResult = cartService.deleteProductsFromCart(customerIdForCart, productId);
+//    public Mono<ResponseMessage> deleteProductFromCart(@PathVariable("customerIdForCart") int customerIdForCart, @PathVariable("productId") int productId) throws CartServiceException{
+//
+//        Mono<AtomicReference<String>> deletedResult = cartService.removeProductsFromCart(customerIdForCart, productId);
 //
 //        if(deletedResult.equals("SUCCESS")){
 //            LOGGER.info("PRODUCT ID ["+productId+"] DELETED FOR CUSTOMER ID ["+customerIdForCart+"]");

@@ -1,62 +1,41 @@
 package com.shoppix.cart_reactive_service.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collection = "PRODUCT_DETAILS")
 public class Product {
 
-	@Transient
-	public static final String SEQUENCE_NAME = "product_sequence";
+    private String parentProductId;
 
-	@Id
-	@Field(name = "PRODUCT_ID")
-	@JsonIgnore
-	private long productId;
-/*
-	@Field(name = "PRODUCT_SKUs")
-	private List<SKU> skuList = new ArrayList<>();*/
+    private String productName;
 
-	@Field(name = "PRODUCT_SERIAL_NUMBER")
-	@JsonIgnore
-	private String productSerialNumber;
+    private List<ProductVariations> productVariations;
 
-	private String productName;
+    private String category;
 
-	private String productBrand;
+    private String subCategory;
 
-	private double productPrice;
+    private String productFulfillmentChannel;
 
-	private double discountedPrice;
+    private String productManufacturer;
 
-	private List<ProductDescription> productDescription;
+    private String productSeller;
 
-	private String productAvailabilityStatus;
+    private long merchantId;
 
-	private double averageRating;
+    private String merchantSellingName;
 
-	@Field(name = "PRODUCT_IMAGES")
-	private List<String> productImages;
+    private List<String> availablePincodesForProduct;
 
-/*	@Field(name = "OFFERS_AVAILABLE")
-	private List<Offers> offersAvailable;
+    private String eventStatus;
 
-	@Field(name = "RATINGS_AND_REVIEWS")
-	private List<RatingsAndReviews> ratingsAndReviews;
+    private String createdDateTime;
 
-	@Field(name = "MERCHANT_DETAILS")
-	private MerchantDetails merchantDetails;*/
+    private String lastUpdatedDateTime;
 
 }

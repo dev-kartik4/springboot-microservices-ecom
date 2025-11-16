@@ -3,7 +3,7 @@ server:
 
 spring:
   profiles:
-    active: local
+    active: docker
   application:
     name: cart-reactive-service
   main:
@@ -14,7 +14,7 @@ spring:
     discovery:
       enabled: true
     config:
-      uri: http://localhost:8888
+      uri: http://config-reactive-service:8888
   data:
     mongodb:
       uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
@@ -52,10 +52,10 @@ eureka:
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-reactive-service:8761/eureka/
   instance:
     app-name: cart-reactive-service
-    hostname: localhost
+    hostname: cart-reactive-service
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
 

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
@@ -27,6 +28,7 @@ public class ProductVariations {
     @Field(name = "BRAND")
     private String brand;
 
+    //this is needed from merchant side
     @Field(name = "MRP_OF_PRODUCT")
     private double mrpProductPrice;
 
@@ -50,5 +52,4 @@ public class ProductVariations {
 
     @Field(name = "RATINGS_AND_REVIEWS")
     private List<RatingsAndReviews> ratingsAndReviews;
-
 }

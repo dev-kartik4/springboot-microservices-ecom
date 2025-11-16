@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.shoppix.cart_reactive_service.entity.CartProduct;
 import com.shoppix.cart_reactive_service.enums.CartEnum;
 import com.shoppix.cart_reactive_service.events.CartEvent;
+import com.shoppix.cart_reactive_service.events.CartProductEvent;
 import com.shoppix.cart_reactive_service.exception.CartServiceException;
 import com.shoppix.cart_reactive_service.pojo.Product;
 import com.shoppix.cart_reactive_service.pojo.ResponseMessage;
@@ -25,7 +26,9 @@ import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -64,24 +67,19 @@ public class CartService {
 
 		return cartRepo.findByCustomerIdForCart(customerCart.getCustomerIdForCart())
 				.switchIfEmpty(Mono.defer(() -> {
-					// If cart doesn't exist, create a new one
 					LOGGER.info("No existing cart found for customer ID [" + customerCart.getCustomerIdForCart() + "], creating new cart...");
 					return createNewCart(customerCart).thenReturn(customerCart);  // Create a new cart if not found
 				}))
 				.flatMap(existingCart -> {
-					// If the cart exists, update it
 					if (existingCart.getCustomerIdForCart() > 0) {
 						LOGGER.info("Existing cart found for customer ID [" + customerCart.getCustomerIdForCart() + "], updating...");
-						return updateExistingCart(existingCart, customerCart)  // Update existing cart if found
-								.thenReturn(existingCart); // After update, return the existing cart
+						return updateExistingCart(existingCart, customerCart).thenReturn(existingCart);
 					} else {
-						// If it's a newly created cart, return it without update
 						LOGGER.info("Cart was just created, no update needed for customer ID [" + customerCart.getCustomerIdForCart() + "]");
 						return Mono.just(existingCart);  // Return the newly created cart without further updates
 					}
 				})
 				.map(cart -> {
-					// Return a success response with the cart in the responseData
 					return ResponseMessage.builder()
 							.statusCode(200)
 							.message("Cart created or updated successfully.")
@@ -93,7 +91,6 @@ public class CartService {
 				})
 				.onErrorResume(e -> {
 					LOGGER.error("Error during cart creation or update", e);
-					// Return an error response if something goes wrong
 					return Mono.just(ResponseMessage.builder()
 							.statusCode(500)
 							.message("Error during cart creation or update.")
@@ -130,14 +127,13 @@ public class CartService {
 						cartKafkaProducerService.sendMessage("cart-topic", cartAsMessage);
 					})
 					.map(savedCart -> {
-						// Successful response
 						return ResponseMessage.builder()
 								.statusCode(200)
 								.message("Cart created successfully.")
 								.timestamp(LocalDateTime.now().toString())
 								.responseData(savedCart)
 								.errorDetails(null)
-								.path("/cart/createNewCart")
+								.path("/cart/createOrUpdateCart/customer")
 								.build();
 					})
 					.onErrorResume(e -> {
@@ -150,7 +146,7 @@ public class CartService {
 								.timestamp(LocalDateTime.now().toString())
 								.responseData(null)
 								.errorDetails(List.of(e.getMessage()))
-								.path("/cart/createNewCart")
+								.path("/cart/createOrUpdateCart/customer")
 								.build());
 					});
 
@@ -162,7 +158,7 @@ public class CartService {
 					.timestamp(LocalDateTime.now().toString())
 					.responseData(null)
 					.errorDetails(List.of(e.getMessage()))
-					.path("/cart/createNewCart")
+					.path("/cart/createOrUpdateCart/customer")
 					.build());
 		}
 	}
@@ -173,22 +169,21 @@ public class CartService {
 
 		existingCart.setCartProducts(updatedCart.getCartProducts());
 		existingCart.setTotalPrice(existingCart.getTotalPrice() + updatedCart.getTotalPrice());
-		existingCart.setEventStatus(CartEnum.CART_CREATED.name());
-		existingCart.setLastUpdatedDateTime(updatedCart.getLastUpdatedDateTime());
+		existingCart.setEventStatus(CartEnum.CART_UPDATED.name());
+		existingCart.setLastUpdatedDateTime(LocalDateTime.now().toString());
 
 		return cartRepo.save(existingCart)
 				.doOnSuccess(savedCart -> {
 					LOGGER.info("Cart updated successfully for customer ID [" + savedCart.getCustomerIdForCart() + "]");
 				})
 				.map(savedCart -> {
-					// Successful response
 					return ResponseMessage.builder()
 							.statusCode(200)
 							.message("Cart updated successfully.")
 							.timestamp(LocalDateTime.now().toString())
 							.responseData(savedCart)
 							.errorDetails(null)
-							.path("/cart/updateExistingCart")
+							.path("/cart/createOrUpdateCart/customer")
 							.build();
 				})
 				.onErrorResume(e -> {
@@ -199,7 +194,7 @@ public class CartService {
 							.timestamp(LocalDateTime.now().toString())
 							.responseData(null)
 							.errorDetails(List.of(e.getMessage()))
-							.path("/cart/updateExistingCart")
+							.path("/cart/createOrUpdateCart/customer")
 							.build());
 				});
 	}
@@ -221,8 +216,42 @@ public class CartService {
 		LOGGER.info("FETCHED CART DETAILS FOR CUSTOMER ID ["+customerIdForCart+"]");
 		Mono<Cart> cartData = cartRepo.findByCustomerIdForCart(customerIdForCart);
 
-		return Mono.just(new ResponseMessage());
+        return cartData
+                .publishOn(Schedulers.parallel())
+                .flatMap(customer -> {
+                    if (customer == null) {
+                        LOGGER.info("CART DETAILS NOT FOUND FOR CUSTOMER ID ["+customerIdForCart+"]");
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(404)
+                                .message("CART DETAILS NOT FOUND FOR CUSTOMER ID ["+customerIdForCart+"]")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(null)
+                                .errorDetails(List.of("CART DETAILS FOR CUSTOMER ID ["+customerIdForCart+"] DOES NOT EXIST"))
+                                .path("/cart/viewCart/customer/"+customerIdForCart)
+                                .build());
+                    } else {
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(200)
+                                .message("CART DETAILS FETCHED SUCCESSFULLY")
+                                .timestamp(LocalDateTime.now().toString())
+                                .responseData(cartData)
+                                .errorDetails(null)
+                                .path("/cart/viewCart/customer/"+customerIdForCart)
+                                .build());
+                    }
+                })
+                .onErrorResume(e -> {
+                    LOGGER.error("ERROR FETCHING CART DETAILS", e);
+                    return Mono.just(ResponseMessage.builder()
+                            .statusCode(500)
+                            .message("ERROR FETCHING CART DETAILS")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(null)
+                            .errorDetails(List.of(e.getMessage()))
+                            .path("/cart/viewCart/customer/"+customerIdForCart)
+                            .build());
 
+                });
 	}
 
 	/**
@@ -230,84 +259,92 @@ public class CartService {
 	 * <p>
 	 * METHOD TO ADD PRODUCT TO CART
 	 *
-	 * @param customerIdForCart
-	 * @param cartProduct
+	 * @param cartProductEvent
 	 * @return
 	 */
-//	public Mono<ResponseMessage> addProductToCart(int customerIdForCart, String productId, CartProduct cartProduct) {
-//		LOGGER.info("ADDING PRODUCTS TO CART...");
-//
-//		// Fetching the existing cart details for the customer
-//		Mono<Cart> existingCustomerCart = getCartDetails(customerIdForCart);
-//
-//		// Fetching the product details for the provided product ID
-//		Mono<Product> product = webClientBuilder.build()
-//				.get()
-//				.uri(PRODUCT_SERVICE_URL.concat("/filterProductById/" + productId))
-//				.retrieve()
-//				.bodyToMono(Product.class)
-//				.subscribeOn(Schedulers.parallel());
-//
-//		// Fetching the cart products and filtering based on productId
-//		Flux<CartProduct> cartProducts = existingCustomerCart.flatMapIterable(Cart::getCartProducts);
-//
-//		return existingCustomerCart.publishOn(Schedulers.parallel()).map(existingCart -> {
-//
-//					existingCart.setCustomerIdForCart(customerIdForCart);
-//
-//					// Find if the product is already in the cart, else add it
-//					Mono<CartProduct> filteredCartProduct = cartProducts.filter(cp -> cp.getProductId().equals(cartProduct.getProductId())).single();
-//
-//					return filteredCartProduct.switchIfEmpty(Mono.defer(() -> {
-//								// If the product is not found in the cart, add it
-//								LOGGER.info("FINAL CART PRODUCT: " + cartProduct);
-//								existingCart.getCartProducts().add(cartProduct);
-//								return Mono.just(cartProduct);
-//							}))
-//							.map(filteredProduct -> {
-//								// If the product is found, update its quantity and price
-//								LOGGER.info("UPDATING EXISTING CART PRODUCT: " + filteredProduct);
-//								CartProduct updatedCartProduct = new CartProduct();
-//								updatedCartProduct.setProductId(cartProduct.getProductId());
-//								updatedCartProduct.setProductName(cartProduct.getProductName());
-//								updatedCartProduct.setPrice(filteredProduct.getPrice() + cartProduct.getPrice());
-//								updatedCartProduct.setQuantity(filteredProduct.getQuantity() + cartProduct.getQuantity());
-//
-//								// Add the updated product to the cart
-//								existingCart.getCartProducts().add(updatedCartProduct);
-//								return updatedCartProduct;
-//							})
-//							.doOnTerminate(() -> {
-//								// Update total price of the cart after adding/updating the product
-//								existingCart.setTotalPrice(existingCart.getTotalPrice() + (cartProduct.getPrice() * cartProduct.getQuantity()));
-//								createOrUpdateCart(existingCart).subscribeOn(Schedulers.parallel()); // Persist updated cart
-//							});
-//
-//				}).flatMap(updatedCart -> {
-//					// Return success response with the updated cart data
-//					return Mono.just(ResponseMessage.builder()
-//							.statusCode(200)
-//							.message("Product added to cart successfully.")
-//							.timestamp(LocalDateTime.now().toString())
-//							.responseData(updatedCart)
-//							.errorDetails(null)
-//							.path("/cart/addProductToCart")
-//							.build());
-//				})
-//				.onErrorResume(e -> {
-//					// In case of any error, return an error response with details
-//					LOGGER.error("Error adding product to cart for customer ID [" + customerIdForCart + "]", e);
-//					return Mono.just(ResponseMessage.builder()
-//							.statusCode(500)
-//							.message("Error adding product to cart.")
-//							.timestamp(LocalDateTime.now().toString())
-//							.responseData(null)
-//							.errorDetails(List.of(e.getMessage()))
-//							.path("/cart/addProductToCart")
-//							.build());
-//				})
-//				.delaySubscription(Duration.ofMillis(3000));  // Optional delay if needed
-//	}
+
+    public Mono<ResponseMessage> addProductToCart(CartProductEvent cartProductEvent) throws CartServiceException {
+
+        LOGGER.info("ADDING PRODUCTS TO CART");
+
+        Mono<CartProduct> newCartProductMono =webClientBuilder.build()
+                .get()
+                .uri(PRODUCT_SERVICE_URL.concat("/filterProductById/"+cartProductEvent.getProductOrVariantProductIdList().stream().findFirst().get()))
+                .retrieve()
+                .bodyToMono(Product.class)
+                .map(product -> {
+                    CartProduct cartProduct = cartProductEvent.getCartProduct();
+//                    cartProduct.setProductOrVariantProductIdList(cartProduct.getProductOrVariantProductIdList());
+                    cartProduct.setProductName(product.getProductName());
+                    product.getProductVariations().forEach(variation -> {
+                        cartProduct.setProductOrVariantProductIdList(Collections.singletonList(variation.getVariantProductId()));
+                        cartProduct.setProductImagesToShow(variation.getProductImages());
+                        cartProduct.setAverageRating(variation.getAverageRating());
+                        cartProduct.setListedPrice(variation.getListingPrice());
+                        cartProduct.setDiscountedPrice(variation.getDiscountedPrice());
+                        cartProduct.setStockStatus(variation.getProductAvailabilityStatus());
+                        cartProduct.setAverageRating(variation.getAverageRating());
+                    });
+                    LOGGER.info("FETCHING PRODUCTS TO CART SUCCESSFUL: {}",cartProduct);
+                    return cartProduct;
+                })
+                .onErrorResume(e -> {
+                    LOGGER.error("ERROR FETCHING PRODUCTS TO CART", e);
+                    return Mono.empty();
+                }).subscribeOn(Schedulers.parallel());
+
+        return newCartProductMono.flatMap(newCartProduct -> {
+            return cartRepo.findByCustomerIdForCart(cartProductEvent.getCustomerIdForCart())
+                    .flatMap(existingCart -> {
+                        return Flux.fromIterable(existingCart.getCartProducts())
+                                .filter(product -> product.getProductOrVariantProductIdList().equals(newCartProduct.getProductOrVariantProductIdList()))
+                                .singleOrEmpty()
+                                .publishOn(Schedulers.parallel())
+                                .flatMap(existingCartProduct -> {
+                                    existingCartProduct.setProductOrVariantProductIdList(newCartProduct.getProductOrVariantProductIdList());
+                                    existingCartProduct.setProductName(newCartProduct.getProductName());
+                                    existingCartProduct.setAverageRating(newCartProduct.getAverageRating());
+                                    existingCartProduct.setProductImagesToShow(newCartProduct.getProductImagesToShow());
+                                    existingCartProduct.setStockStatus(newCartProduct.getStockStatus());
+                                    existingCartProduct.setQuantity(existingCartProduct.getQuantity() + newCartProduct.getQuantity());
+                                    existingCartProduct.setListedPrice(newCartProduct.getListedPrice());
+                                    existingCartProduct.setDiscountedPrice(existingCartProduct.getDiscountedPrice() + newCartProduct.getDiscountedPrice());
+                                    existingCart.getCartProducts().add(existingCartProduct);
+                                    LOGGER.info("UPDATED EXISTING CART PRODUCT: {}", existingCartProduct);
+                                    return cartRepo.save(existingCart);
+                                })
+                                .switchIfEmpty(Mono.defer(() -> {
+                                    existingCart.getCartProducts().add(newCartProduct);
+                                    LOGGER.info("ADDING NEW PRODUCT TO CART: {}", newCartProduct);
+                                    return cartRepo.save(existingCart);
+                                }))
+                                .doOnTerminate(() -> {
+                                    LOGGER.info("TERMINATE METHOD CALLED: {}", existingCart);
+                                    existingCart.setTotalPrice(existingCart.getTotalPrice() + (newCartProduct.getDiscountedPrice() * newCartProduct.getQuantity()));
+                                    createOrUpdateCart(existingCart).subscribe();
+                                });
+                            });
+
+                    })
+                    .map(updatedCart -> ResponseMessage.builder()
+                            .statusCode(200)
+                            .message("PRODUCT ADDED TO CART SUCCESSFULLY")
+                            .timestamp(LocalDateTime.now().toString())
+                            .responseData(updatedCart)
+                            .errorDetails(List.of())
+                            .path("/cart/addProductToCart")
+                            .build())
+                    .onErrorResume(e -> {
+                        LOGGER.error("ERROR ADDING PRODUCT TO CART", e);
+                        return Mono.just(ResponseMessage.builder()
+                                .statusCode(500)
+                                .message("ERROR ADDING PRODUCT TO CART")
+                                .errorDetails(List.of(e.getMessage()))
+                                .path("/cart/addProductToCart")
+                                .timestamp(LocalDateTime.now().toString())
+                                .build());
+                    });
+        }
 
 
 	/**
@@ -315,29 +352,28 @@ public class CartService {
 	 * <p>
 	 * METHOD TO DELETE PRODUCT FROM CART
 	 *
-	 * @param customerIdForCart
+	 * @param cartProductEvent
 	 * @return
 	 * @throws CartServiceException
 	 */
-	public Mono<ResponseMessage> removeProductsFromCart(int customerIdForCart, List<String> productIds) {
-		return cartRepo.findByCustomerIdForCart(customerIdForCart) // Get cart by customer ID
+	public Mono<ResponseMessage> removeProductsFromCart(CartProductEvent cartProductEvent) {
+
+		return cartRepo.findByCustomerIdForCart(cartProductEvent.getCustomerIdForCart())
 				.flatMap(cart -> {
-					// Filter the products to remove from the cart
+
 					List<CartProduct> productsToRemove = cart.getCartProducts().stream()
-							.filter(cartProduct -> productIds.contains(cartProduct.getProductId()))
+							.filter(cartProduct -> cartProductEvent.getProductOrVariantProductIdList().equals(cartProduct.getProductOrVariantProductIdList()))
 							.toList();
 
 					if (!productsToRemove.isEmpty()) {
-						// Remove the products from the cart
+
 						cart.getCartProducts().removeAll(productsToRemove);
 
-						// Recalculate the total price
 						double totalPriceReduction = productsToRemove.stream()
-								.mapToDouble(product -> product.getPrice() * product.getQuantity())
+								.mapToDouble(product -> product.getDiscountedPrice() * product.getQuantity())
 								.sum();
 						cart.setTotalPrice(cart.getTotalPrice() - totalPriceReduction);
 
-						// Save the updated cart
 						return cartRepo.save(cart)
 								.map(savedCart -> ResponseMessage.builder()
 										.statusCode(200)
@@ -348,7 +384,6 @@ public class CartService {
 										.path("/api/v1/cart")
 										.build());
 					} else {
-						// Return a response indicating no products were found to remove
 						return Mono.just(ResponseMessage.builder()
 								.statusCode(404)
 								.message("No matching products found in cart")

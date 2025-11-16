@@ -1,5 +1,6 @@
 package com.shoppix.customer_reactive_service.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.shoppix.customer_reactive_service.entity.Address;
 import com.shoppix.customer_reactive_service.entity.Customer;
 import com.shoppix.customer_reactive_service.exception.CustomerServiceException;
@@ -13,14 +14,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
+import java.util.List;
 
 @CrossOrigin("*")
 @RestController
@@ -57,8 +56,7 @@ public class CustomerController {
     public Mono<ResponseMessage> createCustomer(@RequestBody Customer customer) throws CustomerServiceException {
 
         LOGGER.info("INITIALIZING WITH NEW CUSTOMER REGISTRATION PROCESS");
-        Mono<ResponseMessage> customerResponseMessage = customerService.createOrUpdateCustomer(customer);
-        return customerResponseMessage;
+        return customerService.createOrUpdateCustomer(customer);
     }
 
     /**
@@ -145,7 +143,7 @@ public class CustomerController {
 	 * @throws CustomerServiceException
 	 */
 	@GetMapping("/getAllCustomers")
-	public Mono<ResponseMessage>  getAllCustomers() throws CustomerServiceException{
+	public Mono<ResponseMessage> getAllCustomers() throws CustomerServiceException{
 
         LOGGER.info("FETCHING ALL CUSTOMERS INFO....");
         Mono<ResponseMessage>  allCustomersInfo = customerService.getAllCustomers();
@@ -232,41 +230,15 @@ public class CustomerController {
      * <p>
      * API TO ADD PRODUCT TO CART
      *
-	 * @param productId
-	 * @param customerIdForCart
 	 * @param cartProduct
+	 * @param customerIdForCart
 	 * @return
 	 */
 	@PutMapping("/{customerIdForCart}/addProductToCart")
 	@ResponseBody
-	public Mono<ResponseMessage> addProductToCart(@RequestParam("productId") String productId, @PathVariable("customerIdForCart") int customerIdForCart, @RequestBody CartProduct cartProduct) throws CustomerServiceException {
+	public Mono<ResponseMessage> addProductToCart(@PathVariable("customerIdForCart") int customerIdForCart, @RequestBody CartProduct cartProduct) throws CustomerServiceException {
 
-//        Mono<Cart> cart = webClientBuilder.build()
-//                .get()
-//                .uri(CART_SERVICE_URL.concat("/viewCart/customer/").concat(String.valueOf(customerIdForCart)))
-//                .retrieve()
-//                .bodyToMono(Cart.class)
-//                .publishOn(Schedulers.parallel());
-
-        Mono<ResponseMessage> updatedCartWithProducts = customerService.addProductToCart(customerIdForCart,productId,cartProduct);
-
-//        Mono<Cart> cartObject = cart.map(cartData -> {
-//            cartData.setCustomerIdForCart(customerIdForCart);
-//            cartData.getCartProducts().add(cartProduct);
-//            cartData.setTotalPrice((int)(cartData.getTotalPrice() + cartProduct.getPrice()));
-//            try {
-//                customerService.createOrUpdateCartForCustomer(cartData);
-//            } catch (JsonProcessingException e) {
-//                throw new RuntimeException(e);
-//            }
-//            return cartData;
-//        });
-//
-//        cart.switchIfEmpty(Mono.error(() -> {
-//            throw new CustomerServiceException("ERROR FETCHING CART AND PRODUCT DETAILS FOR CUSTOMER ID ["+customerIdForCart+"]");
-//        })).delaySubscription(Duration.ofMillis(3000));
-
-        return updatedCartWithProducts;
+        return customerService.addProductToCart(customerIdForCart,cartProduct);
 	}
 
 	/**
@@ -274,41 +246,14 @@ public class CustomerController {
      * <p>
      * API TO DELETE PRODUCT FROM CART
      *
-     * @param productId
+     * @param productIdList
      * @param customerIdForCart
      * @return
      */
-	@DeleteMapping("/{customerIdForCart}/deleteProductFromCart/{productId}")
-	public Mono<ResponseMessage> deleteProductFromCart(@RequestParam("productId") String productId, @PathVariable("customerIdForCart") int customerIdForCart) throws CustomerServiceException {
+	@DeleteMapping("/{customerIdForCart}/deleteProductFromCart/{productIdList}")
+	public Mono<ResponseMessage> deleteProductFromCart(@PathVariable("productIdList") List<String> productIdList, @PathVariable("customerIdForCart") int customerIdForCart) throws CustomerServiceException, JsonProcessingException {
 
-//        AtomicReference<String> cartProductDeleted = new AtomicReference<>("SUCCESS");
-//
-//        Mono<Cart> cart = webClientBuilder.build()
-//                .get()
-//                .uri(CART_SERVICE_URL.concat("/viewCart/customer/").concat(String.valueOf(customerIdForCart)))
-//                .retrieve()
-//                .bodyToMono(Cart.class)
-//                .publishOn(Schedulers.parallel());
-
-//        cart.map(customerCart -> customerCart.getCartProducts().stream().filter(cartProduct -> {
-//            if (cartProduct.getProductId() == productId) {
-//                customerCart.getCartProducts().remove(cartProduct);
-//                customerCart.setTotalPrice((int) (customerCart.getTotalPrice()-cartProduct.getPrice()));
-//                customerCart.setCustomerIdForCart(customerCart.getCustomerIdForCart());
-//                try {
-//                    customerService.createOrUpdateCartForCustomer(customerCart);
-//                } catch (JsonProcessingException e) {
-//                    throw new RuntimeException(e);
-//                }
-//                cartProductDeleted.set("SUCCESS");
-//            }
-//            cartProductDeleted.set("SUCCESS");
-//            return true;
-//        })).switchIfEmpty(Mono.error(() -> {
-//            throw new CustomerServiceException("ERROR DELETING PRODUCT ID ["+productId+"] | NO DATA AVAILABLE");
-//        })).delaySubscription(Duration.ofMillis(3000));
-
-        return null;
+        return customerService.deleteProductsFromCart(customerIdForCart,productIdList);
 	}
 
     /*CUSTOMER-ORDER MICROSERVICE*/
@@ -321,19 +266,21 @@ public class CustomerController {
      * @param orderRequest
      * @return
      */
-	@PutMapping("/orderProduct")
+	@PutMapping("/{emailId}/orderProduct/{productId}")
 	@ResponseBody
-	public ResponseEntity<Mono<OrderRequest>> orderNow(@RequestBody OrderRequest orderRequest) throws CustomerServiceException {
+	public Mono<ResponseMessage> orderNow(@PathVariable("productId") String productId, @RequestBody OrderRequest orderRequest) throws CustomerServiceException, JsonProcessingException {
 
-        webClientBuilder.build()
-                .post()
-                .uri(CHECKOUT_SERVICE_URL.concat("/checkout/proceedForPayment"))
-                .bodyValue(orderRequest)
-                .retrieve()
-                .toEntity(OrderRequest.class)
-                .thenReturn(new ResponseEntity<>(orderRequest,HttpStatus.OK)).delaySubscription(Duration.ofMillis(3000)).subscribe();
+        return customerService.orderNow(productId,orderRequest);
 
-		return new ResponseEntity(orderRequest,HttpStatus.OK);
+//        webClientBuilder.build()
+//                .post()
+//                .uri(CHECKOUT_SERVICE_URL.concat("/checkout/proceedForPayment"))
+//                .bodyValue(orderRequest)
+//                .retrieve()
+//                .toEntity(OrderRequest.class)
+//                .thenReturn(new ResponseEntity<>(orderRequest,HttpStatus.OK)).delaySubscription(Duration.ofMillis(3000)).subscribe();
+//
+//		return new ResponseEntity(orderRequest,HttpStatus.OK);
 	}
 
     /**

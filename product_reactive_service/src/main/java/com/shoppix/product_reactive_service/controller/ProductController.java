@@ -45,14 +45,12 @@ public class ProductController {
 	 * @return
 	 * @throws ProductServiceException
 	 */
-	@PostMapping("/createNewProduct")
+	@PostMapping("/createOrUpdateProduct")
 	@ResponseBody
-	public ResponseEntity<Mono<Product>> createOrUpdateProduct(@RequestBody Product newProduct) throws ProductServiceException {
+	public Mono<ResponseMessage> createOrUpdateProduct(@RequestBody Product newProduct) throws ProductServiceException {
 
 		LOGGER.info("ADDING NEW PRODUCT");
-		Mono<Product> productData = productService.createOrUpdateProduct(newProduct);
-
-		return new ResponseEntity(productData, HttpStatus.OK);
+		return productService.createOrUpdateProduct(newProduct);
 	}
 
 	/**
@@ -63,49 +61,41 @@ public class ProductController {
 	 * @return
 	 * @throws ProductServiceException
 	 */
-	@GetMapping("/getAllProducts")
-	public ResponseEntity<Flux<Product>> getAllProducts() throws ProductServiceException{
+	@GetMapping("/filterAllProducts")
+	public Mono<ResponseMessage> filterAllProducts() throws ProductServiceException{
 
 		LOGGER.info("FETCHING ALL PRODUCTS THROUGH API CALL....");
-		Flux<Product> allProductInfo = productService.getAllProducts();
-
-		return new ResponseEntity<>(allProductInfo,HttpStatus.OK);
+		return productService.filterAllProducts();
 	}
 
 
-	@GetMapping("/filterProductById/{productId}")
-	public ResponseEntity<Mono<Product>> filterProductsById(@PathVariable("productId") String productId) throws ProductServiceException {
+	@GetMapping("/filterByParentProductId/{parentProductId}")
+	public Mono<ResponseMessage> filterProductsByParentProductId(@PathVariable("parentProductId") String parentProductId) throws ProductServiceException {
 
-		LOGGER.info("FETCHING PRODUCT WITH PRODUCT ID ["+productId+"]");
-		Mono<Product> product = productService.getProductById(productId);
-
-		return new ResponseEntity(product,HttpStatus.OK);
+		LOGGER.info("FETCHING PRODUCT WITH PRODUCT ID ["+parentProductId+"]");
+		return productService.filterByParentProductId(parentProductId);
 	}
 
 
 	@GetMapping("/filterProductsByName/{productName}")
-	public ResponseEntity<?> filterProductsByName(@PathVariable("productName") String productName) throws ProductServiceException {
+	public Mono<ResponseMessage> filterProductsByName(@PathVariable("productName") String productName) throws ProductServiceException {
 
 		LOGGER.info("FETCHING PRODUCT WITH PRODUCT NAME ["+productName+"]");
-		Mono<Product> product = productService.getProductByName(productName);
-
-		return new ResponseEntity(product,HttpStatus.OK);
+		return productService.filterByProductName(productName);
 	}
 
-	@GetMapping("/filterProductsByCategory/{productCategory}")
-	public ResponseEntity<?> filterProductsByCategory(@PathVariable("productName") String productName) throws ProductServiceException {
+//	@GetMapping("/filterProductsByCategory/{productCategory}")
+//	public Mono<ResponseMessage> filterProductsByCategory(@PathVariable("category") String category) throws ProductServiceException {
+//
+//		LOGGER.info("FETCHING PRODUCTS WITH CATEGORY ["+category+"]");
+//		return productService.filterProductByCategory(category);
+//	}
 
-		LOGGER.info("FETCHING PRODUCT WITH PRODUCT NAME ["+productName+"]");
-		Mono<Product> product = productService.getProductByName(productName);
-
-		return new ResponseEntity(product,HttpStatus.OK);
-	}
-
-	@DeleteMapping("/deleteProductById/{productId}")
-	public Mono<ResponseEntity<ResponseMessage>> deleteProductById(@PathVariable("productId") String productId) throws ProductServiceException{
+	@DeleteMapping("/deleteByParentProductId/{parentProductId}")
+	public Mono<ResponseMessage> deleteByParentProductId(@PathVariable("parentProductId") String parentProductId) throws ProductServiceException{
 
 
-		return productService.deleteByParentProductId(productId)
+		return productService.deleteByParentProductId(parentProductId)
 				.flatMap(deleted -> {
 					if(deleted) {
 						ResponseMessage responseMessage = new ResponseMessage();
@@ -128,20 +118,18 @@ public class ProductController {
 				});
 	}
 
-	@GetMapping("/check-pincode/{productId}/{pincode}")
-	public ResponseEntity<Mono<String>> checkPincode(@PathVariable("productId") String productId,@PathVariable("pincode") String pincode) throws ProductServiceException{
+	@GetMapping("/checkPincode/{productId}/{pincode}")
+	public Mono<ResponseMessage> checkPincode(@PathVariable("productId") String productId,@PathVariable("pincode") String pincode) throws ProductServiceException{
 
-		Mono<String> checkPincodeResponse = productService.checkServiceablePincode(productId,pincode);
-
-		return new ResponseEntity(checkPincodeResponse, HttpStatus.OK);
+		return productService.checkServiceablePincode(productId,pincode);
 	}
 
 	/* ALL MAPPINGS FOR PRODUCT-INVENTORY MICROSERVICE*/
 	
 	@GetMapping("/inventory/{inventoryId}")
-	public ResponseEntity<Mono<Inventory>> getProductByInventoryId(@PathVariable("inventoryId") int inventoryId) throws ProductServiceException{
+	public Mono<ResponseMessage> getProductByInventoryId(@PathVariable("inventoryId") int inventoryId) throws ProductServiceException{
 
-		Mono<Inventory> inventory = productService.getProductByInventoryId(inventoryId);
+		return productService.getProductByInventoryId(inventoryId);
 
 		return new ResponseEntity(inventory,HttpStatus.OK);
 	}

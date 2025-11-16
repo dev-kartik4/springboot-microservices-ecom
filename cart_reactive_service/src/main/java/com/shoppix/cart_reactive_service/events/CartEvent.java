@@ -15,4 +15,6 @@ public class CartEvent {
     private String cartMessageType;
 
     private Cart cartMessage;
+
+    private CartProductEvent cartProductEvent;
 }

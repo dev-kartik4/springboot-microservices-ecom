@@ -1,11 +1,11 @@
 server:
-  port: 8550
+  port: 8220
 
 spring:
   profiles:
-    active: local
+    active: docker
   application:
-    name: cart-reactive-service
+    name: product-reactive-service
   main:
     web-application-type: reactive
     allow-circular-references: true
@@ -14,7 +14,7 @@ spring:
     discovery:
       enabled: true
     config:
-      uri: http://localhost:8888
+      uri: http://config-reactive-service:8888
   data:
     mongodb:
       uri: mongodb+srv://devkartik:karvysh@kartikcodes.evlntvy.mongodb.net/ecom-reactive-app?ssl=true&sslInvalidHostNameAllowed=true&streamType=netty&retryWrites=true&w=majority&appName=kartikcodes
@@ -22,15 +22,32 @@ spring:
   kafka:
     bootstrap-servers: localhost:9092
     topic:
-      cart-topic: cart-topic
+      merchant-topic: merchant-topic
+      product-topic: product-topic
+      product-notification-topic: product-notification-topic
+      inventory-topic: inventory-topic
+      offers-topic: offers-topic
     dead-letter:
-      cart-dlt: cart-topic-dlt
+      product-topic-dlt: product-topic-dlt
+      product-notification-dlt: product-notification-dlt
+      inventory-dlt: inventory-dlt
+      offers-dlt: offers-dlt
     producer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      product:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      inventory:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      notification:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      offers:
+        key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
     consumer:
       auto-offset-reset: earliest
-      group-id: cart-consumer-group
+      group-id: product-consumer-group
       enable-auto-commit: false
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
@@ -39,6 +56,13 @@ spring:
           json:
             trusted:
               packages: "*"
+      topics:
+        - merchant-topic
+        - product-topic
+        - product-topic-dlt
+        - product-notification-topic
+        - inventory-topic
+        - offers-topic
     retry:
       max-attempts: 3
       backoff:
@@ -46,16 +70,17 @@ spring:
         multiplier: 2
         max-interval: 5000
 
+
 eureka:
   client:
     enabled: true
     register-with-eureka: true
     fetch-registry: true
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://eureka-reactive-service:8761/eureka/
   instance:
-    app-name: cart-reactive-service
-    hostname: localhost
+    app-name: product-reactive-service
+    hostname: product-reactive-service
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
 
@@ -74,7 +99,7 @@ management:
 resilience4j:
   circuitbreaker:
     instances:
-      cart-reactive-service:
+      product-service-reactive:
         registerHealthIndicator: true
         eventConsumerBufferSize: 10
         failureRateThreshold: 50
@@ -87,13 +112,13 @@ resilience4j:
 
   retry:
     instances:
-      cart-reactive-service:
+      product-service-reactive:
         registerHealthIndicator: true
         maxRetryAttempts: 3
         waitDuration: 10s
   ratelimiter:
     instances:
-      cart-reactive-service:
+      product-service-reactive:
         registerHealthIndicator: false
         limitForPeriod: 10
         limitRefreshPeriod: 10s
